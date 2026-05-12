@@ -73,10 +73,18 @@
     <div class="center-text">
         ANTHV<span class="slash">/</span>A
     </div>
+
     <div class="footer-text left-bottom">
         一点星尘（深圳）科技有限公司<br>
         Anthvia Limited
     </div>
-    <div class="footer-text right-bottom">ai#anthvia.com(#=@)</div>
+    
+    <!-- 防爬虫邮箱容器 -->
+    <div class="footer-text right-bottom" id="email"></div>
+
+    <!-- JS动态渲染邮箱，防爬虫 -->
+    <script>
+      document.getElementById("email").innerText = "ai" + "@" + "anthvia.com";
+    </script>
 </body>
 </html>
