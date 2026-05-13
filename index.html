@@ -60,7 +60,7 @@
             display: inline-block;
             font-family: 'Helvetica', 'Arial', sans-serif !important;
             animation: slashSlant 7s ease-in-out infinite;
-            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ffecd2, #c9f4ff, #a1c4fd);
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ffecd2, #a1c4fd);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -115,10 +115,12 @@
             overflow: hidden;
         }
 
+        /* 🔥 图片改成完美圆形 */
         .photo {
             position: absolute;
             object-fit: cover;
             opacity: 0;
+            border-radius: 50%; /* 圆形核心代码 */
             transition: opacity 2s ease;
             -webkit-mask-image: radial-gradient(240% 240% at center, black 12%, transparent 75%);
             mask-image: radial-gradient(240% 240% at center, black 12%, transparent 75%);
@@ -197,12 +199,12 @@
             let mouseX = 0, mouseY = 0;
             let mx = 0, my = 0;
 
-            window.addEventListener('mousemove', (e) => {
+            window.addEventListener('mousemove', e => {
                 mouseX = (e.clientX / window.innerWidth - 0.5);
                 mouseY = (e.clientY / window.innerHeight - 0.5);
             });
 
-            window.addEventListener('touchmove', (e) => {
+            window.addEventListener('touchmove', e => {
                 if (e.touches.length > 0) {
                     mouseX = (e.touches[0].clientX / window.innerWidth - 0.5);
                     mouseY = (e.touches[0].clientY / window.innerHeight - 0.5);
