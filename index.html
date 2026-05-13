@@ -88,25 +88,23 @@
         }
         .main-info.hidden { opacity: 0; pointer-events: none; }
 
-        /* 🔥 最终版：和LOGO初始粉色完全一致！无白、不深、超清晰 */
         .nav-link {
             position: absolute;
             top: 58%;
             font-size: 1.15rem;
             font-family: "YouYuan", "幼圆", sans-serif !important;
-            font-weight: 50;
+            font-weight: 600;
             opacity: 0;
             transition: all 0.3s ease;
             cursor: pointer;
             text-decoration: none;
             color: #fff;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.35);
             z-index: 888;
             padding: 12px 26px;
             border-radius: 50px;
             
-            /* ✅ 100% 匹配 LOGO 最初的温柔粉色 */
-            background: linear-gradient(45deg, #ff9a9e, #f9b3c1, #f7a2b3, #ff9a9e);
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ffecd2, #c9f4ff, #a1c4fd);
             
             background-size: 300% 300%;
             animation: bgShift 8s ease infinite;
@@ -154,11 +152,14 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
+        // 🔥 微信浏览器专用超级禁区：100% 不遮挡左上角LOGO
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
-            const safeWidth = window.innerWidth * 0.35;
-            const safeHeight = window.innerHeight * 0.25;
+
+            // 🔥 强制扩大禁区：微信/手机 100% 安全
+            const safeLeft = window.innerWidth * 0.45;
+            const safeTop = window.innerHeight * 0.35;
 
             for (let i = 0; i < images.length; i++) {
                 const img = document.createElement('img');
@@ -170,7 +171,9 @@
                 do {
                     x = Math.random() * window.innerWidth;
                     y = Math.random() * window.innerHeight;
-                } while (x < safeWidth && y < safeHeight);
+                } 
+                // 核心：只要在左上角大片区域内，就重新生成位置
+                while (x < safeLeft && y < safeTop);
 
                 const rot = (Math.random() - 0.5) * 40;
                 img.style.left = x + 'px';
