@@ -177,18 +177,12 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
-        // 🔥 核心修改：左上角 30% 区域禁止放图片，其他位置铺满
+        // 🔥 已恢复：图片尺寸改回更大之前的原版大小（3.2倍）
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
-            const total = images.length;
-            const cols = 4;
-            const rows = Math.ceil(total / cols);
-            const cellW = 100 / cols;
-            const cellH = 100 / rows;
-            
-            const imgSize = Math.max(window.innerWidth, window.innerHeight) / 2.2;
+            const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
 
-            for (let i = 0; i < total; i++) {
+            for (let i = 0; i < images.length; i++) {
                 const img = document.createElement('img');
                 img.src = images[i];
                 img.className = 'photo';
@@ -196,7 +190,7 @@
                 img.style.height = imgSize + 'px';
 
                 let posX, posY;
-                // 🔥 避开左上角：x>30% 或 y>30%
+                // 避开左上角LOGO区域
                 do {
                     posX = Math.random() * 100;
                     posY = Math.random() * 100;
