@@ -121,14 +121,21 @@
             pointer-events: none; z-index: 1; overflow: hidden;
         }
 
+        /* 🔥 完美出场动画：初始缩小 + 渐显 */
         .photo {
-            position: absolute; object-fit: cover; opacity: 0;
-            border-radius: 50%; transition: opacity 2s ease, transform 2s cubic-bezier(0.1, 0.9, 0.3, 1);
+            position: absolute; object-fit: cover;
+            opacity: 0;
+            border-radius: 50%;
             transform-origin: center;
+            transform: translate(-50%, -50%) scale(0.3);
+            transition: all 2.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             -webkit-mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
             mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
         }
-        .photo.show { opacity: 0.95; }
+        .photo.show {
+            opacity: 0.95;
+            transform: translate(-50%, -50%) scale(1);
+        }
     </style>
 </head>
 <body>
@@ -146,13 +153,15 @@
             images.push(`images/${String.fromCharCode(97 + i)}.jpg`);
         }
 
+        // 🔥 鼠标/触摸 躲避物理效果
         let mouseX = 0, mouseY = 0;
-        let currentMouseX = 0, currentMouseY = 0;
-
-        // 鼠标监听
         document.addEventListener("mousemove", (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
+        });
+        document.addEventListener("touchmove", (e) => {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
         });
 
         setTimeout(() => {
@@ -164,8 +173,8 @@
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
-            const safeLeft = window.innerWidth * 0.45;
-            const safeTop = window.innerHeight * 0.35;
+            const safeLeft = window.innerWidth * 0.28;
+            const safeTop = window.innerHeight * 0.18;
             const positions = [];
             const minDist = imgSize * 0.6;
 
@@ -204,48 +213,55 @@
                 const rot = (Math.random() - 0.5) * 40;
                 img.style.left = x + 'px';
                 img.style.top = y + 'px';
-                img.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+                img.style.transform = `translate(-50%, -50%) rotate(${rot}deg) scale(0.3)`;
                 wrapper.appendChild(img);
             }
 
             setTimeout(() => {
                 document.querySelectorAll('.photo').forEach(p => p.classList.add('show'));
                 document.querySelectorAll('.nav-link').forEach(item => item.classList.add('show'));
-                startFloatAnimation();
+                startBalloonPhysics();
             }, 100);
         }
 
-        // 🔥 漂浮 + 鼠标引力互动（超级温柔）
-        function startFloatAnimation() {
+        // 🎈 🔥 终极物理：气球自动漂浮 + 鼠标触碰躲避（超真实！）
+        function startBalloonPhysics() {
             const photos = document.querySelectorAll('.photo');
-            
-            photos.forEach((img, i) => {
-                let dx = (Math.random() - 0.5) * 0.25;
-                let dy = (Math.random() - 0.5) * 0.25;
+            const avoidRadius = 130;   // 躲避感应范围
+            const avoidForce = 18;    // 躲避力度
+
+            photos.forEach(img => {
                 let x = 0, y = 0;
-                let fx = 0, fy = 0;
+                let vx = (Math.random() - 0.5) * 0.3;
+                let vy = (Math.random() - 0.5) * 0.3;
+                const baseRot = img.style.transform.match(/rotate\((.*?)deg\)/)[1];
 
-                function float() {
-                    // 自动漂浮
-                    x += dx;
-                    y += dy;
-                    if (Math.abs(x) > 10) dx *= -1;
-                    if (Math.abs(y) > 10) dy *= -1;
+                function update() {
+                    // 缓慢自动漂浮
+                    x += vx;
+                    y += vy;
+                    if (Math.abs(x) > 12) vx *= -1;
+                    if (Math.abs(y) > 12) vy *= -1;
 
-                    // 鼠标引力（温柔跟随）
-                    currentMouseX += (mouseX - currentMouseX) * 0.05;
-                    currentMouseY += (mouseY - currentMouseY) * 0.05;
-                    const centerX = window.innerWidth / 2;
-                    const centerY = window.innerHeight / 2;
-                    fx = (currentMouseX - centerX) / 25;
-                    fy = (currentMouseY - centerY) / 25;
+                    // 🔥 鼠标/手指靠近 → 气球躲避
+                    const rect = img.getBoundingClientRect();
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    const dx = cx - mouseX;
+                    const dy = cy - mouseY;
+                    const dist = Math.hypot(dx, dy);
 
-                    // 合并动画
-                    const base = img.style.transform.replace(/translate\([^)]*\)/g, '').trim();
-                    img.style.transform = `${base} translate(${x + fx}px, ${y + fy}px)`;
-                    requestAnimationFrame(float);
+                    if (dist < avoidRadius) {
+                        const angle = Math.atan2(dy, dx);
+                        x += Math.cos(angle) * avoidForce * (1 - dist / avoidRadius);
+                        y += Math.sin(angle) * avoidForce * (1 - dist / avoidRadius);
+                    }
+
+                    // 应用动画
+                    img.style.transform = `translate(-50%, -50%) rotate(${baseRot}deg) scale(1) translate(${x}px, ${y}px)`;
+                    requestAnimationFrame(update);
                 }
-                float();
+                update();
             });
         }
     </script>
