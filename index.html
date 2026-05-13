@@ -99,7 +99,6 @@
             cursor: pointer;
             text-decoration: none;
             color: #fff;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.35);
             z-index: 888;
             padding: 12px 26px;
             border-radius: 50px;
@@ -124,7 +123,8 @@
 
         .photo {
             position: absolute; object-fit: cover; opacity: 0;
-            border-radius: 50%; transition: opacity 2s ease; transform-origin: center;
+            border-radius: 50%; transition: opacity 2s ease, transform 2s cubic-bezier(0.1, 0.9, 0.3, 1);
+            transform-origin: center;
             -webkit-mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
             mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
         }
@@ -152,12 +152,9 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
-        // 🔥 微信浏览器专用超级禁区：100% 不遮挡左上角LOGO
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
-
-            // 🔥 强制扩大禁区：微信/手机 100% 安全
             const safeLeft = window.innerWidth * 0.45;
             const safeTop = window.innerHeight * 0.35;
 
@@ -171,9 +168,7 @@
                 do {
                     x = Math.random() * window.innerWidth;
                     y = Math.random() * window.innerHeight;
-                } 
-                // 核心：只要在左上角大片区域内，就重新生成位置
-                while (x < safeLeft && y < safeTop);
+                } while (x < safeLeft && y < safeTop);
 
                 const rot = (Math.random() - 0.5) * 40;
                 img.style.left = x + 'px';
@@ -187,37 +182,31 @@
                 document.querySelectorAll('.nav-link').forEach(item => item.classList.add('show'));
             }, 100);
 
-            initSmoothParallax();
+            startFloatAnimation();
         }
 
-        function initSmoothParallax() {
+        // 🔥 新特效：气球悬浮漂浮（超好看！）
+        function startFloatAnimation() {
             const photos = document.querySelectorAll('.photo');
-            let mouseX = 0, mouseY = 0, mx = 0, my = 0;
+            const floatSpeed = 0.05;
 
-            window.addEventListener('mousemove', e => {
-                mouseX = (e.clientX / window.innerWidth - 0.5);
-                mouseY = (e.clientY / window.innerHeight - 0.5);
-            });
-            window.addEventListener('touchmove', e => {
-                if (e.touches.length > 0) {
-                    mouseX = (e.touches[0].clientX / window.innerWidth - 0.5);
-                    mouseY = (e.touches[0].clientY / window.innerHeight - 0.5);
+            photos.forEach((img, i) => {
+                let dx = (Math.random() - 0.5) * 0.3;
+                let dy = (Math.random() - 0.5) * 0.3;
+                let x = 0, y = 0;
+
+                function float() {
+                    x += dx;
+                    y += dy;
+                    if (Math.abs(x) > 12) dx *= -1;
+                    if (Math.abs(y) > 12) dy *= -1;
+
+                    const base = img.style.transform.replace(/translate\([^)]*\)/g, '').trim();
+                    img.style.transform = `${base} translate(${x}px, ${y}px)`;
+                    requestAnimationFrame(float);
                 }
+                float();
             });
-
-            function animate() {
-                mx += (mouseX - mx) * 0.1;
-                my += (mouseY - my) * 0.1;
-                photos.forEach((img, i) => {
-                    const speed = 4 + i * 0.8;
-                    const moveX = mx * speed;
-                    const moveY = my * speed;
-                    const rot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1] || 0);
-                    img.style.transform = `translate(-50%, -50%) rotate(${rot}deg) translate(${moveX}px, ${moveY}px)`;
-                });
-                requestAnimationFrame(animate);
-            }
-            animate();
         }
     </script>
 </body>
