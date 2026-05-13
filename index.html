@@ -130,18 +130,7 @@
             transition: all 2.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             -webkit-mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
             mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
-
-            /* 🔥 新增：超级温柔 呼吸 + 旋转动画 */
-            animation: photoFloat 12s ease-in-out infinite;
         }
-
-        /* 🔥 核心美化动画：超级柔！超级治愈！ */
-        @keyframes photoFloat {
-            0%   { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-            50%  { transform: translate(-50%, -50%) scale(1.04) rotate(2deg); }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-        }
-
         .photo.show {
             opacity: 0.95;
             transform: translate(-50%, -50%) scale(1);
@@ -182,11 +171,8 @@
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
-
-            // 🔥 固定像素禁区：左上角 180x100 区域永久无图
-            const safeLeft = 180;
-            const safeTop = 100;
-
+            const safeLeft = window.innerWidth * 0.32;
+            const safeTop = window.innerHeight * 0.22;
             const positions = [];
             const minDist = imgSize * 0.6;
 
@@ -199,7 +185,6 @@
                     x = Math.random() * window.innerWidth;
                     y = Math.random() * window.innerHeight;
 
-                    // 🔥 绝对禁区：x<180 且 y<100 绝对不生成图片
                     if (x < safeLeft && y < safeTop) {
                         valid = false;
                         continue;
@@ -244,10 +229,9 @@
             const photos = document.querySelectorAll('.photo');
             const avoidRadius = 130;
             const avoidForce = 18;
-
-            // 🔥 固定像素禁区
-            const safeLeft = 180;
-            const safeTop = 100;
+            const safeLeft = window.innerWidth * 0.32;
+            const safeTop = window.innerHeight * 0.22;
+            const margin = 80;
 
             photos.forEach(img => {
                 let ox = parseFloat(img.dataset.ox);
@@ -278,8 +262,8 @@
                     const finalX = ox + x;
                     const finalY = oy + y;
 
-                    // 🔥 终极锁：任何情况都不允许进入左上角 180*100
-                    if (finalX < safeLeft && finalY < safeTop) {
+                    // 🔥 最强锁：只要进禁区 → 直接弹回安全区
+                    if (finalX < safeLeft + margin && finalY < safeTop + margin) {
                         x = 0;
                         y = 0;
                     }
