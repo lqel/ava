@@ -56,7 +56,6 @@
             font-size: 1.8rem;
         }
 
-        /* 加大幅度微动动画 */
         .slash {
             display: inline-block;
             font-family: "Comic Sans MS", "Arial Rounded MT Bold", sans-serif !important;
@@ -145,13 +144,9 @@
             border-radius: 50%;
             transition: opacity 2s ease;
             transform-origin: center;
-            
-            /* 🔥 核心：只让边缘渐变透明，中间保持清晰 */
             -webkit-mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
             mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
         }
-
-        /* 🔥 恢复原来的透明度 0.95，整体不变！只边缘柔化 */
         .photo.show {
             opacity: 0.95;
         }
@@ -181,9 +176,11 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
+        // 🔥 🔥 🔥 终极方案：强制避开左上角，100% 不会出现图片
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
+            const safeMargin = 180; // 左上角安全区大小（像素）
 
             for (let i = 0; i < images.length; i++) {
                 const img = document.createElement('img');
@@ -192,16 +189,16 @@
                 img.style.width = imgSize + 'px';
                 img.style.height = imgSize + 'px';
 
-                let posX, posY;
+                let x, y;
+                // 绝对禁区：左上角 safeMargin 像素内，绝不生成图片
                 do {
-                    posX = Math.random() * 100;
-                    posY = Math.random() * 100;
-                } while (posX < 40 && posY < 40);
+                    x = Math.random() * window.innerWidth;
+                    y = Math.random() * window.innerHeight;
+                } while (x < safeMargin && y < safeMargin);
 
                 const rot = (Math.random() - 0.5) * 40;
-
-                img.style.left = posX + '%';
-                img.style.top = posY + '%';
+                img.style.left = x + 'px';
+                img.style.top = y + 'px';
                 img.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
                 
                 wrapper.appendChild(img);
@@ -244,7 +241,7 @@
                     
                     img.style.transform = `translate(-50%, -50%) rotate(${rot}deg) translate(${moveX}px, ${moveY}px)`;
                 });
-                requestAnimationFrame(animate());
+                requestAnimationFrame(animate);
             }
             animate();
         }
