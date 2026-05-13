@@ -140,7 +140,7 @@
             overflow: hidden;
         }
 
-        /* 图片：边缘柔和透明 + 中间清晰 */
+        /* 图片：边缘柔和透明 + 中间清晰，**完全不模糊** */
         .photo {
             position: absolute;
             object-fit: cover;
@@ -148,13 +148,13 @@
             border-radius: 50%;
             transition: opacity 2s ease;
             transform-origin: center;
-            -webkit-mask-image: radial-gradient(circle, black 65%, transparent 100%);
-            mask-image: radial-gradient(circle, black 65%, transparent 100%);
-            opacity: 0.85;
+            -webkit-mask-image: radial-gradient(circle, black 75%, transparent 100%);
+            mask-image: radial-gradient(circle, black 75%, transparent 100%);
+            opacity: 0.9;
         }
 
         .photo.show {
-            opacity: 0.85;
+            opacity: 0.9;
         }
     </style>
 </head>
