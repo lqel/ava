@@ -123,7 +123,7 @@
 
         .photo {
             position: absolute; object-fit: cover;
-            opacity: 0;
+            opacity: 0.95;
             border-radius: 50%;
             transform-origin: center;
             transform: translate(-50%, -50%) scale(0.3);
@@ -174,43 +174,28 @@
             const positions = [];
             const minDist = imgSize * 0.6;
 
-            // 全新干净禁区：微信竖屏完美保护LOGO
-            const SAFE_MARGIN = 160;
-
             for (let i = 0; i < images.length; i++) {
                 let x, y, valid;
                 let attempts = 0;
-
                 do {
                     valid = true;
                     x = Math.random() * window.innerWidth;
                     y = Math.random() * window.innerHeight;
-
-                    // 禁区：左上角 160px 范围内绝不生成图片
-                    if (x < SAFE_MARGIN && y < SAFE_MARGIN) {
-                        valid = false;
-                        continue;
-                    }
-
                     for (let pos of positions) {
                         const dx = x - pos.x;
                         const dy = y - pos.y;
                         const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < minDist) {
-                            valid = false;
-                            break;
-                        }
+                        if (dist < minDist) { valid = false; break; }
                     }
                     attempts++;
                 } while (!valid && attempts < 200);
-
-                positions.push({x, y});
+                positions.push({x,y});
                 const img = document.createElement('img');
                 img.src = images[i];
                 img.className = 'photo';
                 img.style.width = imgSize + 'px';
                 img.style.height = imgSize + 'px';
-                const rot = (Math.random() - 0.5) * 40;
+                const rot = (Math.random()-0.5)*40;
                 img.style.left = x + 'px';
                 img.style.top = y + 'px';
                 img.dataset.ox = x;
@@ -220,49 +205,54 @@
             }
 
             setTimeout(() => {
-                document.querySelectorAll('.photo').forEach(p => p.classList.add('show'));
-                document.querySelectorAll('.nav-link').forEach(item => item.classList.add('show'));
+                document.querySelectorAll('.photo').forEach(p=>p.classList.add('show'));
+                document.querySelectorAll('.nav-link').forEach(i=>i.classList.add('show'));
                 startBalloonPhysics();
             }, 100);
         }
 
-        // 🎈 鼠标躲避 + 流畅动画（无卡顿）
         function startBalloonPhysics() {
             const photos = document.querySelectorAll('.photo');
             const avoidRadius = 140;
             const avoidForce = 20;
-            const SAFE_MARGIN = 160;
+            const logo = document.querySelector('.center-text');
 
             photos.forEach(img => {
                 let ox = parseFloat(img.dataset.ox);
                 let oy = parseFloat(img.dataset.oy);
-                let offsetX = 0, offsetY = 0;
-                let velX = (Math.random() - 0.5) * 0.3;
-                let velY = (Math.random() - 0.5) * 0.3;
+                let offsetX=0, offsetY=0;
+                let velX = (Math.random()-0.5)*0.3;
+                let velY = (Math.random()-0.5)*0.3;
                 const baseRot = img.style.transform.match(/rotate\((.*?)deg\)/)[1];
 
                 function update() {
-                    // 自然漂浮
                     offsetX += velX;
                     offsetY += velY;
-                    if (Math.abs(offsetX) > 12) velX *= -1;
-                    if (Math.abs(offsetY) > 12) velY *= -1;
+                    if(Math.abs(offsetX)>12) velX*=-1;
+                    if(Math.abs(offsetY)>12) velY*=-1;
 
-                    // 鼠标躲避
                     const rect = img.getBoundingClientRect();
-                    const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height / 2;
+                    const cx = rect.left + rect.width/2;
+                    const cy = rect.top + rect.height/2;
                     const dx = cx - mouseX;
                     const dy = cy - mouseY;
-                    const dist = Math.hypot(dx, dy);
-
-                    if (dist < avoidRadius) {
-                        const angle = Math.atan2(dy, dx);
-                        offsetX += Math.cos(angle) * avoidForce * (1 - dist / avoidRadius);
-                        offsetY += Math.sin(angle) * avoidForce * (1 - dist / avoidRadius);
+                    const dist = Math.hypot(dx,dy);
+                    if(dist < avoidRadius){
+                        const a = Math.atan2(dy,dx);
+                        offsetX += Math.cos(a)*avoidForce*(1-dist/avoidRadius);
+                        offsetY += Math.sin(a)*avoidForce*(1-dist/avoidRadius);
                     }
 
-                    // 应用位置
+                    // ✅ 图片碰到LOGO → 自动变透明
+                    const lr = logo.getBoundingClientRect();
+                    const overlap = 
+                        rect.left < lr.right &&
+                        rect.right > lr.left &&
+                        rect.top < lr.bottom &&
+                        rect.bottom > lr.top;
+                    
+                    img.style.opacity = overlap ? 0.25 : 0.95;
+
                     img.style.transform = `translate(-50%, -50%) rotate(${baseRot}deg) scale(1) translate(${offsetX}px, ${offsetY}px)`;
                     requestAnimationFrame(update);
                 }
