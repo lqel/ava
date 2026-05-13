@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- 🔥 修复 ICO：/ 和 A 完全同高，不再突出 -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2255%22 font-size=%2260%22 font-family=%22HarmonyOS Sans Regular%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22black%22>/A</text></svg>">
-    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25 y=%2255%25 font-size=%2260%25 font-family=%22HarmonyOS Sans Regular%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22black%22>/A</text></svg>">
     <title>Home / Anthvia</title>
     <style>
         * {
@@ -22,9 +19,7 @@
             height: 100vh;
             overflow: hidden;
             background: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -36,6 +31,19 @@
             align-items: baseline;
             justify-content: center;
             line-height: 1;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1.2s cubic-bezier(0.76, 0, 0.24, 1);
+            z-index: 999;
+        }
+
+        .center-text.moved {
+            top: 2rem;
+            left: 2rem;
+            transform: translate(0, 0);
+            font-size: 1.8rem;
         }
 
         .slash {
@@ -68,12 +76,47 @@
             font-size: 1.2rem;
             opacity: 0;
             line-height: 1.5;
+            pointer-events: none;
         }
 
         .right-bottom {
             right: 2rem;
             padding-top: 0.2em;
             font-size: 0.9rem;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+        .right-bottom.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 照片墙样式 - 柔和渐隐 + 随机定位 */
+        .photo-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .photo {
+            position: absolute;
+            width: 22vw;
+            max-width: 260px;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            /* 边缘柔和渐隐，无边框 */
+            -webkit-mask-image: radial-gradient(circle at center, black 70%, transparent 100%);
+            mask-image: radial-gradient(circle at center, black 70%, transparent 100%);
+            will-change: transform;
+        }
+
+        .photo.show {
+            opacity: 1;
         }
     </style>
 </head>
@@ -89,8 +132,95 @@
     
     <div class="footer-text right-bottom" id="email"></div>
 
+    <!-- 图片容器 -->
+    <div class="photo-wrapper" id="photoWrapper"></div>
+
     <script>
-      document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
+        // 邮箱
+        document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
+
+        // 配置：你的图片列表（自行增删）
+        const images = [
+            'images/a.jpg',
+            'images/b.jpg',
+            'images/c.jpg',
+            'images/d.jpg',
+            'images/e.jpg',
+            'images/f.jpg',
+            'images/g.jpg'
+        ];
+
+        // 5秒后移动LOGO + 隐藏邮箱
+        setTimeout(() => {
+            document.querySelector('.center-text').classList.add('moved');
+            document.querySelector('.right-bottom').classList.add('hidden');
+
+            // 延迟1秒 → 显示随机照片
+            setTimeout(initPhotos, 1000);
+        }, 5000);
+
+        // 初始化随机照片
+        function initPhotos() {
+            const wrapper = document.getElementById('photoWrapper');
+            const count = Math.floor(Math.random() * 2) + 4; // 4-5张
+            const selected = images.sort(() => Math.random() - 0.5).slice(0, count);
+
+            selected.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'photo';
+
+                // 随机角度：-15° ~ 15°
+                const rot = (Math.random() * 30) - 15;
+                // 随机位置
+                const posX = Math.random() * 80 + 10;
+                const posY = Math.random() * 70 + 15;
+
+                img.style.left = posX + '%';
+                img.style.top = posY + '%';
+                img.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+
+                wrapper.appendChild(img);
+            });
+
+            // 渐显
+            setTimeout(() => {
+                document.querySelectorAll('.photo').forEach(p => p.classList.add('show'));
+            }, 100);
+
+            // 启动鼠标/触摸物理效果
+            initParallax();
+        }
+
+        // 鼠标/触摸 浮动物理效果
+        function initParallax() {
+            const photos = document.querySelectorAll('.photo');
+            let mouseX = 0, mouseY = 0;
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+                    mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+                }
+            });
+
+            function animate() {
+                photos.forEach((img, i) => {
+                    const delay = i * 0.15;
+                    const moveX = mouseX * (20 + i * 3);
+                    const moveY = mouseY * (20 + i * 3);
+                    const baseRot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1]);
+                    img.style.transform = `translate(-50%, -50%) rotate(${baseRot}deg) translate(${moveX}px, ${moveY}px)`;
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
     </script>
 </body>
 </html>
