@@ -30,17 +30,16 @@
             color: #000000;
             letter-spacing: 0.06em;
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             justify-content: center;
-            line-height: 1; /* 统一行高，核心对齐 */
+            line-height: 1;
         }
 
-        /* 🔥 仅修改这里：让/和英文高度/对齐完全一致 */
+        /* 🔥 终极完美方案：clip-path 裁剪 / 上下多余部分，和英文完全同高 */
+        /* 不拉伸、不变形、不扭曲、不影响动画 */
         .slash {
             display: inline-block;
-            vertical-align: top; /* 垂直对齐 */
-            line-height: inherit; /* 继承行高 */
-            height: 1em; /* 高度和字体等高 */
+            clip-path: inset(12% 0 12% 0); /* 上下各裁12%，完美同高 */
             animation: slashSlant 7s ease-in-out infinite;
             will-change: transform, opacity;
             transform: translateZ(0);
@@ -72,6 +71,7 @@
 
         .right-bottom {
             right: 2rem;
+            padding-top: 0.2em;
             font-size: 0.9rem;
         }
     </style>
