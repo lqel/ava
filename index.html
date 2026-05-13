@@ -101,18 +101,28 @@
             overflow: hidden;
         }
 
+        /* 🔥 终极融合蒙版：完全看不到任何边缘、线条、轮廓 */
         .photo {
             position: absolute;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 1.8s ease;
-            -webkit-mask-image: radial-gradient(ellipse at center, black 35%, transparent 100%);
-            mask-image: radial-gradient(ellipse at center, black 35%, transparent 100%);
+            transition: opacity 2s ease;
+            
+            -webkit-mask-image: radial-gradient(200% 200% at center, black 12%, transparent 65%);
+            mask-image: radial-gradient(200% 200% at center, black 12%, transparent 65%);
+            
             transform-origin: center;
+            animation: idleDrift 28s ease-in-out infinite alternate;
         }
 
         .photo.show {
             opacity: 0.9;
+        }
+
+        /* 不动时优雅微动 */
+        @keyframes idleDrift {
+            0%   { transform: translate(-50%, -50%) rotate(0deg) translate(0px, 0px); }
+            100% { transform: translate(-50%, -50%) rotate(0deg) translate(22px, 18px); }
         }
     </style>
 </head>
@@ -132,7 +142,7 @@
     <script>
         document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
 
-        // 🔥 自动加载全部 a-n 14张图片
+        // 全部 a-n 14张图
         const images = [];
         for (let i = 0; i < 14; i++) {
             images.push(`images/${String.fromCharCode(97 + i)}.jpg`);
@@ -144,19 +154,17 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
-        // 🔥 全部14张 + 平均分布 + 自适应全屏
+        // 14张全量 + 平均铺满 + 自适应
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
-            const total = images.length; // 14张全用
+            const total = images.length;
 
-            // 自动网格 → 平均铺满
             const cols = Math.ceil(Math.sqrt(total * 1.2));
             const rows = Math.ceil(total / cols);
             const cellW = 100 / cols;
             const cellH = 100 / rows;
 
-            // 自适应图片大小
-            const imgSize = Math.max(window.innerWidth, window.innerHeight) / (Math.sqrt(total) * 0.75);
+            const imgSize = Math.max(window.innerWidth, window.innerHeight) / (Math.sqrt(total) * 0.65);
 
             images.forEach((src, index) => {
                 const img = document.createElement('img');
@@ -165,19 +173,18 @@
                 img.style.width = imgSize + 'px';
                 img.style.height = imgSize + 'px';
 
-                // 平均网格位置
                 const col = index % cols;
                 const row = Math.floor(index / cols);
                 const baseX = col * cellW + cellW * 0.5;
                 const baseY = row * cellH + cellH * 0.5;
 
-                // 自然随机偏移
                 const posX = baseX + (Math.random() - 0.5) * cellW * 0.4;
                 const posY = baseY + (Math.random() - 0.5) * cellH * 0.4;
-                const rot = (Math.random() * 16) - 8;
+                const rot = (Math.random() * 12) - 6;
 
                 img.style.left = posX + '%';
                 img.style.top = posY + '%';
+                img.style.animationDelay = `${index * 0.2}s`;
                 img.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
 
                 wrapper.appendChild(img);
@@ -190,7 +197,7 @@
             initSmoothParallax();
         }
 
-        // 🔥 丝滑物理效果，无抖动
+        // 丝滑物理叠加微动
         function initSmoothParallax() {
             const photos = document.querySelectorAll('.photo');
             let mouseX = 0, mouseY = 0;
@@ -213,7 +220,7 @@
                 my += (mouseY - my) * 0.1;
 
                 photos.forEach((img, i) => {
-                    const speed = 7 + i * 1.1;
+                    const speed = 5 + i * 0.9;
                     const moveX = mx * speed;
                     const moveY = my * speed;
                     const rot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1] || 0);
