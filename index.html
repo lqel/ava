@@ -101,28 +101,21 @@
             overflow: hidden;
         }
 
-        /* 🔥 终极融合蒙版：完全看不到任何边缘、线条、轮廓 */
+        /* 🔥 终极柔化边缘：完全融合无边框 */
         .photo {
             position: absolute;
             object-fit: cover;
             opacity: 0;
             transition: opacity 2s ease;
             
-            -webkit-mask-image: radial-gradient(200% 200% at center, black 12%, transparent 65%);
-            mask-image: radial-gradient(200% 200% at center, black 12%, transparent 65%);
+            -webkit-mask-image: radial-gradient(220% 220% at center, black 15%, transparent 70%);
+            mask-image: radial-gradient(220% 220% at center, black 15%, transparent 70%);
             
             transform-origin: center;
-            animation: idleDrift 28s ease-in-out infinite alternate;
         }
 
         .photo.show {
-            opacity: 0.9;
-        }
-
-        /* 不动时优雅微动 */
-        @keyframes idleDrift {
-            0%   { transform: translate(-50%, -50%) rotate(0deg) translate(0px, 0px); }
-            100% { transform: translate(-50%, -50%) rotate(0deg) translate(22px, 18px); }
+            opacity: 0.92;
         }
     </style>
 </head>
@@ -140,21 +133,22 @@
     <div class="photo-wrapper" id="photoWrapper"></div>
 
     <script>
-        document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
+        document.getElementById("email").innerText = "contact@anthvia.com";
 
-        // 全部 a-n 14张图
+        // 自动加载 a-n 全部14张图片
         const images = [];
         for (let i = 0; i < 14; i++) {
             images.push(`images/${String.fromCharCode(97 + i)}.jpg`);
         }
 
+        // 5秒后LOGO移动 + 隐藏邮箱
         setTimeout(() => {
             document.querySelector('.center-text').classList.add('moved');
             document.querySelector('.right-bottom').classList.add('hidden');
             setTimeout(initPhotos, 1000);
         }, 5000);
 
-        // 14张全量 + 平均铺满 + 自适应
+        // 14张全量 + 平均铺满 + 随机角度
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const total = images.length;
@@ -173,23 +167,27 @@
                 img.style.width = imgSize + 'px';
                 img.style.height = imgSize + 'px';
 
+                // 网格平均分布
                 const col = index % cols;
                 const row = Math.floor(index / cols);
                 const baseX = col * cellW + cellW * 0.5;
                 const baseY = row * cellH + cellH * 0.5;
 
+                // 随机位置偏移
                 const posX = baseX + (Math.random() - 0.5) * cellW * 0.4;
                 const posY = baseY + (Math.random() - 0.5) * cellH * 0.4;
-                const rot = (Math.random() * 12) - 6;
+                
+                // 🔥 随机旋转角度 (-15° ~ 15°)
+                const rot = (Math.random() * 30) - 15;
 
                 img.style.left = posX + '%';
                 img.style.top = posY + '%';
-                img.style.animationDelay = `${index * 0.2}s`;
                 img.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
 
                 wrapper.appendChild(img);
             });
 
+            // 图片渐显
             setTimeout(() => {
                 document.querySelectorAll('.photo').forEach(p => p.classList.add('show'));
             }, 100);
@@ -197,7 +195,7 @@
             initSmoothParallax();
         }
 
-        // 丝滑物理叠加微动
+        // 🔥 纯鼠标/触屏物理跟随（无自动微动）
         function initSmoothParallax() {
             const photos = document.querySelectorAll('.photo');
             let mouseX = 0, mouseY = 0;
@@ -224,6 +222,8 @@
                     const moveX = mx * speed;
                     const moveY = my * speed;
                     const rot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1] || 0);
+                    
+                    // 只响应鼠标/触摸，无自动动画
                     img.style.transform = `translate(-50%, -50%) rotate(${rot}deg) translate(${moveX}px, ${moveY}px)`;
                 });
                 requestAnimationFrame(animate);
