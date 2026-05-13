@@ -19,7 +19,7 @@
             position: relative;
         }
 
-        /* 🔥 英文LOGO字体：超圆润可爱体 */
+        /* 🔥 精准恢复：你要的【前一个版本】LUO字体 */
         .center-text {
             font-size: 8vw;
             letter-spacing: 0.1em;
@@ -36,7 +36,7 @@
             font-family: "Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", sans-serif;
             font-weight: 900;
             
-            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ffecd2, #c9f4ff, #a1c4fd);
+            background: linear-gradient(45deg, #ff99cc, #a0c4ff);
             background-size: 300% 300%;
             -webkit-background-clip: text;
             background-clip: text;
@@ -61,7 +61,7 @@
             display: inline-block;
             font-family: "Comic Sans MS", "Arial Rounded MT Bold", sans-serif !important;
             animation: slashSlant 7s ease-in-out infinite;
-            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ffecd2, #a1c4fd);
+            background: linear-gradient(45deg, #ff99cc, #a0c4ff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -72,13 +72,12 @@
         @keyframes slashSlant {
             0%   { opacity: 1; transform: translate(0, 0); }
             14%  { opacity: 1; transform: translate(0, 0); }
-            18%  { opacity: 0; transform: translate(15vw, -36vw); }
-            24%  { opacity: 0; transform: translate(-15vw, 36vw); }
+            18%  { opacity: 0; transform: translate(15px, -36px); }
+            24%  { opacity: 0; transform: translate(-15px, 36px); }
             28.5%{ opacity: 1; transform: translate(0, 0); }
             100% { opacity: 1; transform: translate(0, 0); }
         }
 
-        /* 🔥 中文统一：圆润软萌可爱体（不板正 + 幼圆风格） */
         .main-info {
             position: absolute;
             right: 2rem;
@@ -86,7 +85,7 @@
             font-size: 1.15rem;
             opacity: 1;
             transition: opacity 1s ease;
-            font-family: "Microsoft YaHei UI", "微软雅黑", "PingFang SC", "Heiti SC", sans-serif;
+            font-family: "YouYuan", "幼圆", sans-serif !important;
             font-weight: 500;
             background: linear-gradient(45deg, #ff85a2, #74b6ff);
             -webkit-background-clip: text;
@@ -99,30 +98,35 @@
             pointer-events: none;
         }
 
+        /* 好看渐变按钮 保留 */
         .nav-link {
             position: absolute;
             top: 52%;
-            font-size: 1.5rem;
-            font-family: "Microsoft YaHei UI", "微软雅黑", "PingFang SC", "Heiti SC", sans-serif;
+            font-size: 1.4rem;
+            font-family: "YouYuan", "幼圆", sans-serif !important;
             font-weight: 500;
             opacity: 0;
-            transition: opacity 1.2s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
             text-decoration: none;
-            background: linear-gradient(45deg, #ff85a2, #74b6ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: #fff;
             z-index: 888;
+            padding: 12px 28px;
+            border-radius: 50px;
+            background: linear-gradient(120deg, #ff99cc, #a0c4ff);
+            box-shadow: 0 6px 15px rgba(255, 153, 204, 0.25);
         }
         .nav-link.show {
             opacity: 1;
         }
+        .nav-link:hover {
+            transform: scale(1.06);
+        }
         .nav-left {
-            left: 18%;
+            left: 15%;
         }
         .nav-right {
-            right: 18%;
+            right: 15%;
         }
 
         .photo-wrapper {
@@ -136,15 +140,15 @@
             overflow: hidden;
         }
 
+        /* 图片模糊 保留 */
         .photo {
             position: absolute;
             object-fit: cover;
             opacity: 0;
             border-radius: 50%;
             transition: opacity 2s ease;
-            -webkit-mask-image: radial-gradient(240% 240% at center, black 12%, transparent 75%);
-            mask-image: radial-gradient(240% 240% at center, black 12%, transparent 75%);
             transform-origin: center;
+            filter: blur(1.5px);
         }
 
         .photo.show {
@@ -176,6 +180,7 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
+        // 全屏乱序图片 保留
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.5;
@@ -187,18 +192,9 @@
                 img.style.width = imgSize + 'px';
                 img.style.height = imgSize + 'px';
 
-                let posX, posY;
-                
-                while (true) {
-                    posX = Math.random() * 100;
-                    posY = Math.random() * 100;
-
-                    if( (posY >= 22 && posY <= 38) || (posY >= 65 && posY <= 78) ) {
-                        break;
-                    }
-                }
-
-                const rot = (Math.random() - 0.5) * 40;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const rot = (Math.random() - 0.5) * 60;
                 
                 img.style.left = posX + '%';
                 img.style.top = posY + '%';
