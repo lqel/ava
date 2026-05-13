@@ -79,25 +79,16 @@
 
         .main-info {
             position: absolute;
-            right: 2rem;
-            bottom: 2rem;
-            font-size: 1.15rem;
-            opacity: 1;
-            transition: opacity 1s ease;
-            font-family: "YouYuan", "幼圆", sans-serif !important;
-            font-weight: 50;
+            right: 2rem; bottom: 2rem;
+            font-size: 1.15rem; opacity: 1; transition: opacity 1s ease;
+            font-family: "YouYuan", "幼圆", sans-serif !important; font-weight: 50;
             background: linear-gradient(45deg, #ff85a2, #74b6ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            -webkit-background-clip: text; background-clip: text; color: transparent;
             z-index: 888;
         }
-        .main-info.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+        .main-info.hidden { opacity: 0; pointer-events: none; }
 
-        /* 🔥 🔥 🔥 按钮底色已改为和LOGO一模一样的渐变！🔥 🔥 🔥 */
+        /* 🔥 最终版：和LOGO初始粉色完全一致！无白、不深、超清晰 */
         .nav-link {
             position: absolute;
             top: 58%;
@@ -109,59 +100,41 @@
             cursor: pointer;
             text-decoration: none;
             color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
             z-index: 888;
             padding: 12px 26px;
             border-radius: 50px;
-            /* 和 LOGO 完全一样的渐变色 */
-            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #ffecd2, #a1c4fd);
+            
+            /* ✅ 100% 匹配 LOGO 最初的温柔粉色 */
+            background: linear-gradient(45deg, #ff9a9e, #f9b3c1, #f7a2b3, #ff9a9e);
+            
             background-size: 300% 300%;
             animation: bgShift 8s ease infinite;
             box-shadow: 0 6px 15px rgba(255, 153, 204, 0.25);
         }
-        .nav-link.show {
-            opacity: 1;
-        }
-        .nav-link:hover {
-            transform: scale(1.05);
-        }
-        .nav-left {
-            left: 8%;
-        }
-        .nav-right {
-            right: 8%;
-        }
+
+        .nav-link.show { opacity: 1; }
+        .nav-link:hover { transform: scale(1.05); }
+        .nav-left { left: 8%; }
+        .nav-right { right: 8%; }
 
         .photo-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 1; overflow: hidden;
         }
 
         .photo {
-            position: absolute;
-            object-fit: cover;
-            opacity: 0;
-            border-radius: 50%;
-            transition: opacity 2s ease;
-            transform-origin: center;
+            position: absolute; object-fit: cover; opacity: 0;
+            border-radius: 50%; transition: opacity 2s ease; transform-origin: center;
             -webkit-mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
             mask-image: radial-gradient(circle, white 90%, rgba(255,255,255,0.75) 100%);
         }
-        .photo.show {
-            opacity: 0.95;
-        }
+        .photo.show { opacity: 0.95; }
     </style>
 </head>
 <body>
-    <div class="center-text">
-        LUO<span class="slash">/</span>LUO
-    </div>
-
+    <div class="center-text"> LUO<span class="slash">/</span>LUO </div>
     <div class="main-info">洛宝家的礼物相关..</div>
 
     <a href="https://www.kdocs.cn/l/cpOS6o0WxM5F" target="_blank" class="nav-link nav-left">积分查询</a>
@@ -181,31 +154,28 @@
             setTimeout(initPhotos, 1000);
         }, 5000);
 
-        // 终极方案：强制避开左上角，100% 不会出现图片
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
             const imgSize = Math.max(window.innerWidth, window.innerHeight) / 3.2;
-            const safeMargin = 180; // 左上角安全区大小（像素）
+            const safeWidth = window.innerWidth * 0.35;
+            const safeHeight = window.innerHeight * 0.25;
 
             for (let i = 0; i < images.length; i++) {
                 const img = document.createElement('img');
-                img.src = images[i];
-                img.className = 'photo';
+                img.src = images[i]; img.className = 'photo';
                 img.style.width = imgSize + 'px';
                 img.style.height = imgSize + 'px';
 
                 let x, y;
-                // 绝对禁区：左上角 safeMargin 像素内，绝不生成图片
                 do {
                     x = Math.random() * window.innerWidth;
                     y = Math.random() * window.innerHeight;
-                } while (x < safeMargin && y < safeMargin);
+                } while (x < safeWidth && y < safeHeight);
 
                 const rot = (Math.random() - 0.5) * 40;
                 img.style.left = x + 'px';
                 img.style.top = y + 'px';
                 img.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
-                
                 wrapper.appendChild(img);
             }
 
@@ -219,14 +189,12 @@
 
         function initSmoothParallax() {
             const photos = document.querySelectorAll('.photo');
-            let mouseX = 0, mouseY = 0;
-            let mx = 0, my = 0;
+            let mouseX = 0, mouseY = 0, mx = 0, my = 0;
 
             window.addEventListener('mousemove', e => {
                 mouseX = (e.clientX / window.innerWidth - 0.5);
                 mouseY = (e.clientY / window.innerHeight - 0.5);
             });
-
             window.addEventListener('touchmove', e => {
                 if (e.touches.length > 0) {
                     mouseX = (e.touches[0].clientX / window.innerWidth - 0.5);
@@ -237,13 +205,11 @@
             function animate() {
                 mx += (mouseX - mx) * 0.1;
                 my += (mouseY - my) * 0.1;
-
                 photos.forEach((img, i) => {
                     const speed = 4 + i * 0.8;
                     const moveX = mx * speed;
                     const moveY = my * speed;
                     const rot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1] || 0);
-                    
                     img.style.transform = `translate(-50%, -50%) rotate(${rot}deg) translate(${moveX}px, ${moveY}px)`;
                 });
                 requestAnimationFrame(animate);
