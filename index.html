@@ -91,7 +91,7 @@
             pointer-events: none;
         }
 
-        /* 照片墙样式 - 柔和渐隐 + 随机定位 */
+        /* 🔥 图片铺满全屏优化 */
         .photo-wrapper {
             position: fixed;
             top: 0;
@@ -104,14 +104,16 @@
 
         .photo {
             position: absolute;
-            width: 22vw;
-            max-width: 260px;
+            width: 28vw;
+            max-width: 320px;
+            min-width: 180px;
+            aspect-ratio: 3/2;
             object-fit: cover;
             opacity: 0;
             transition: opacity 1.2s ease;
-            /* 边缘柔和渐隐，无边框 */
-            -webkit-mask-image: radial-gradient(circle at center, black 70%, transparent 100%);
-            mask-image: radial-gradient(circle at center, black 70%, transparent 100%);
+            /* 边缘柔化，无边框 */
+            -webkit-mask-image: radial-gradient(ellipse at center, black 65%, transparent 100%);
+            mask-image: radial-gradient(ellipse at center, black 65%, transparent 100%);
             will-change: transform;
         }
 
@@ -131,57 +133,41 @@
     </div>
     
     <div class="footer-text right-bottom" id="email"></div>
-
-    <!-- 图片容器 -->
     <div class="photo-wrapper" id="photoWrapper"></div>
 
     <script>
-        // 邮箱
         document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
 
-        // 配置：你的图片列表（自行增删）
-        const images = [
-            'images/a.jpg',
-            'images/b.jpg',
-            'images/c.jpg',
-            'images/d.jpg',
-            'images/e.jpg',
-            'images/f.jpg',
-            'images/g.jpg',
-            'images/h.jpg',
-            'images/i.jpg',
-            'images/j.jpg',
-            'images/k.jpg',
-            'images/l.jpg',
-            'images/m.jpg',
-            'images/n.jpg',
-        ];
+        // 🔥 自动生成 a.jpg ~ n.jpg（14张）
+        const images = [];
+        const start = 'a'.charCodeAt(0);
+        for (let i = 0; i < 14; i++) {
+            images.push(`images/${String.fromCharCode(start + i)}.jpg`);
+        }
 
-        // 5秒后移动LOGO + 隐藏邮箱
+        // 5秒后移动LOGO
         setTimeout(() => {
             document.querySelector('.center-text').classList.add('moved');
             document.querySelector('.right-bottom').classList.add('hidden');
-
-            // 延迟1秒 → 显示随机照片
             setTimeout(initPhotos, 1000);
         }, 5000);
 
-        // 初始化随机照片
+        // 🔥 铺满屏幕的照片布局
         function initPhotos() {
             const wrapper = document.getElementById('photoWrapper');
-            const count = Math.floor(Math.random() * 2) + 4; // 4-5张
+            const count = 10; // 更多图片，铺满屏幕
             const selected = images.sort(() => Math.random() - 0.5).slice(0, count);
 
-            selected.forEach(src => {
+            selected.forEach((src, i) => {
                 const img = document.createElement('img');
                 img.src = src;
                 img.className = 'photo';
-
-                // 随机角度：-15° ~ 15°
-                const rot = (Math.random() * 30) - 15;
-                // 随机位置
-                const posX = Math.random() * 80 + 10;
-                const posY = Math.random() * 70 + 15;
+                
+                // 随机角度 -18° ~ 18°
+                const rot = (Math.random() * 36) - 18;
+                // 全屏随机位置
+                const posX = Math.random() * 90;
+                const posY = Math.random() * 85 + 5;
 
                 img.style.left = posX + '%';
                 img.style.top = posY + '%';
@@ -190,38 +176,36 @@
                 wrapper.appendChild(img);
             });
 
-            // 渐显
             setTimeout(() => {
                 document.querySelectorAll('.photo').forEach(p => p.classList.add('show'));
             }, 100);
 
-            // 启动鼠标/触摸物理效果
             initParallax();
         }
 
-        // 鼠标/触摸 浮动物理效果
+        // 🔥 每张独立物理浮动效果
         function initParallax() {
             const photos = document.querySelectorAll('.photo');
             let mouseX = 0, mouseY = 0;
 
             window.addEventListener('mousemove', (e) => {
-                mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-                mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 2.2;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 2.2;
             });
 
             window.addEventListener('touchmove', (e) => {
                 if (e.touches.length > 0) {
-                    mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
-                    mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+                    mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2.2;
+                    mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2.2;
                 }
             });
 
             function animate() {
                 photos.forEach((img, i) => {
-                    const delay = i * 0.15;
-                    const moveX = mouseX * (20 + i * 3);
-                    const moveY = mouseY * (20 + i * 3);
-                    const baseRot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1]);
+                    const speed = 12 + i * 2.5;
+                    const moveX = mouseX * speed;
+                    const moveY = mouseY * speed;
+                    const baseRot = parseFloat(img.style.transform.match(/rotate\((.*?)deg\)/)[1] || 0);
                     img.style.transform = `translate(-50%, -50%) rotate(${baseRot}deg) translate(${moveX}px, ${moveY}px)`;
                 });
                 requestAnimationFrame(animate);
