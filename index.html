@@ -2,15 +2,15 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25 y=%2255%25 font-size=%2260%25 font-family=%22HarmonyOS Sans Regular%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22black%22>/A</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25 y=%2255%25 font-size=%2260%25 font-family=%22sans-serif%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22black%22>/A</text></svg>">
     <title>Home / Anthvia</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'HarmonyOS Sans Regular', 'HarmonyOS Sans', sans-serif;
+            font-family: 'Alibaba PuHuiTi 3.0', 'Alibaba PuHuiTi', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
             font-weight: 400;
         }
 
@@ -94,9 +94,91 @@
             opacity: 0;
             pointer-events: none;
         }
+
+        /* ===== 背景氛围层：淡网格 + 中央光晕 + 鼠标跟随柔光（保持黑白极简） ===== */
+        .bg-grid, .bg-glow, .cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 极淡网格线，增加纵深感，不抢主体 */
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+            background-size: 64px 64px;
+        }
+
+        /* 中央柔和光晕，汇聚视线 */
+        .bg-glow {
+            background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(0, 0, 0, 0.045), transparent 65%);
+        }
+
+        /* 鼠标跟随的淡柔光 */
+        .cursor-glow {
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            left: 0;
+            top: 0;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.055), transparent 65%);
+            transform: translate(-50%, -50%);
+            transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+            will-change: transform;
+        }
+
+        /* 触屏设备隐藏鼠标光晕 */
+        @media (hover: none), (pointer: coarse) {
+            .cursor-glow { display: none; }
+        }
+
+        /* 尊重系统减少动效偏好 */
+        @media (prefers-reduced-motion: reduce) {
+            .cursor-glow { transition: none; }
+        }
+
+        /* ===== 中央超大淡斜杠：LOGO 移走后驻留屏幕中央，缓慢摆动呼吸 ===== */
+        .center-slash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 55vmin;
+            line-height: 1;
+            color: rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+            user-select: none;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            z-index: 0;
+        }
+        .center-slash.active {
+            opacity: 1;
+            animation: slashBreath 10s ease-in-out infinite;
+        }
+        @keyframes slashBreath {
+            0%, 100% { transform: translate(-50%, -50%) rotate(-5deg) scale(1); }
+            50%      { transform: translate(-50%, -50%) rotate(5deg) scale(1.02); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .center-slash.active { animation: none; }
+        }
     </style>
 </head>
 <body>
+    <!-- 背景氛围层（不参与交互，不影响内容） -->
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow" aria-hidden="true"></div>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+    <!-- 中央超大淡斜杠（品牌符号驻留，LOGO 移走后浮现） -->
+    <div class="center-slash" aria-hidden="true">/</div>
+
     <div class="center-text">
         ANTHV<span class="slash">/</span>A
     </div>
@@ -112,10 +194,19 @@
       // 邮箱
       document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
 
-      // 5秒后执行：移动LOGO + 隐藏右下角邮箱
+      // 鼠标跟随柔光（仅精确指针设备，触屏自动隐藏）
+      const glow = document.getElementById("cursorGlow");
+      if (glow && window.matchMedia("(hover: hover)").matches) {
+        window.addEventListener("mousemove", (e) => {
+          glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+        }, { passive: true });
+      }
+
+      // 5秒后执行：移动LOGO + 隐藏右下角邮箱 + 浮现中央斜杠
       setTimeout(() => {
         document.querySelector('.center-text').classList.add('moved');
         document.querySelector('.right-bottom').classList.add('hidden');
+        document.querySelector('.center-slash').classList.add('active');
       }, 5000);
     </script>
 </body>
