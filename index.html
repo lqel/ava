@@ -3,22 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25 y=%2255%25 font-size=%2260%25 font-family=%22sans-serif%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22black%22>/A</text></svg>">
-    <title>Home / Anthvia</title>
+    <link rel="icon" media="(prefers-color-scheme: light)" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25 y=%2255%25 font-size=%2260%25 font-family=%22sans-serif%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22black%22>/A</text></svg>">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25 y=%2255%25 font-size=%2260%25 font-family=%22sans-serif%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23A79C8E%22>/A</text></svg>">
+    <title>Anthvia · 一点星尘</title>
+    <meta name="description" content="一点星尘。/A">
+    <meta name="keywords" content="Anthvia, 一点星尘, 极简设计, 视觉实验, 交互设计">
+    <meta name="robots" content="index, follow">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#F3EEE3" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1C1A18" media="(prefers-color-scheme: dark)">
+    <link rel="canonical" href="https://www.anthvia.com/">
+    <!-- 待补：百度/Google 站长验证码 -->
+
+    <!-- 微信 / 社交分享卡片 -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Anthvia">
+    <meta property="og:title" content="Anthvia · 一点星尘">
+    <meta property="og:description" content="一点星尘。/A">
+    <meta property="og:url" content="https://www.anthvia.com/">
+    <!-- 待补：分享图 og:image（暂不部署图片，留空） -->
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- Twitter / X 卡片 -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Anthvia · 一点星尘">
+    <meta name="twitter:description" content="一点星尘。/A">
+
+    <!-- Google / 百度结构化数据：公开品牌与简称，不含公司全称 -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Anthvia",
+      "alternateName": "一点星尘",
+      "url": "https://www.anthvia.com/",
+      "description": "一点星尘。/A",
+      "inLanguage": "zh-CN"
+    }
+    </script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Alibaba PuHuiTi 3.0', 'Alibaba PuHuiTi', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Hiragino Sans GB", sans-serif;
             font-weight: 400;
         }
 
         html, body {
             width: 100%;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
-            background: #ffffff;
+            background: #F3EEE3;
             position: relative;
             -webkit-font-smoothing: antialiased;
         }
@@ -26,7 +63,7 @@
         /* 初始：屏幕居中 | 5秒后：移动到左上角 */
         .center-text {
             font-size: 8vw;
-            color: #000000;
+            color: var(--logo-color, #6B6156);
             letter-spacing: 0.06em;
             display: inline-flex;
             align-items: baseline;
@@ -36,11 +73,14 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: all 1.2s cubic-bezier(0.76, 0, 0.24, 1);
+            transition: top 1.2s cubic-bezier(0.76, 0, 0.24, 1),
+                        left 1.2s cubic-bezier(0.76, 0, 0.24, 1),
+                        transform 1.2s cubic-bezier(0.76, 0, 0.24, 1),
+                        font-size 1.2s cubic-bezier(0.76, 0, 0.24, 1),
+                        color 0.4s ease;
             z-index: 999;
         }
 
-        /* 5秒后移动到左上角 */
         .center-text.moved {
             top: 2rem;
             left: 2rem;
@@ -48,13 +88,29 @@
             font-size: 1.8rem;
         }
 
+        /* 字符逐个入场 */
+        .ch {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(0.14em);
+            animation: charIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: calc(var(--i) * 0.075s);
+        }
+        @keyframes charIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .slash {
             display: inline-block;
             clip-path: inset(12% 0 12% 0);
             animation: slashSlant 7s ease-in-out infinite;
+            transition: color 0.5s ease;
             will-change: transform, opacity;
             transform: translateZ(0);
             backface-visibility: hidden;
+        }
+        .slash.accent {
+            color: #D9541E;
         }
 
         @keyframes slashSlant {
@@ -66,36 +122,75 @@
             100% { opacity: 1; transform: translate(0, 0) translateZ(0); }
         }
 
-        .footer-text {
-            position: absolute;
-            color: #000000;
-            bottom: 25%;
-            text-align: left;
-        }
-
-        /* 左下：始终隐藏 */
-        .left-bottom {
-            left: 2rem;
-            font-size: 1.2rem;
-            opacity: 0;
-            line-height: 1.5;
+        /* ===== 中文散落层：静态随机位置，鼠标靠近被推开并变焦橙 ===== */
+        .scatter {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
             pointer-events: none;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 1.2s ease;
         }
-
-        /* 右下邮箱：初始显示，移动后隐藏 */
-        .right-bottom {
-            right: 2rem;
-            padding-top: 0.2em;
-            font-size: 0.9rem;
+        .scatter.ready {
             opacity: 1;
-            transition: opacity 1s ease;
         }
-        .right-bottom.hidden {
-            opacity: 0;
-            pointer-events: none;
+        .scatter span {
+            position: absolute;
+            display: inline-block;
+            color: rgba(42, 39, 36, 0.13);
+            transition: color 0.35s ease;
+            will-change: transform;
+            transform: translate(var(--pushX, 0px), var(--pushY, 0px));
+        }
+        .scatter span.hot {
+            color: rgba(217, 84, 30, 0.46);
+        }
+        .scatter-in {
+            display: inline-block;
+            font-style: normal;
+            transform: rotate(var(--rot, 0deg));
         }
 
-        /* ===== 背景氛围层：淡网格 + 中央光晕 + 鼠标跟随柔光（保持黑白极简） ===== */
+        /* ===== 隐藏信息层：Anthvia Limited 保留探照可读 ===== */
+        .hidden-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding: 0 0 18vh 6vw;
+            pointer-events: none;
+            color: rgba(42, 39, 36, var(--depth, 0.48));
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 1.2s ease, color 0.35s ease;
+            -webkit-mask-image: radial-gradient(circle 260px at var(--mx, -600px) var(--my, -600px), #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 78%);
+            mask-image: radial-gradient(circle 260px at var(--mx, -600px) var(--my, -600px), #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 78%);
+        }
+        .hidden-layer.ready {
+            opacity: 1;
+        }
+        .hidden-layer.reveal {
+            -webkit-mask-image: none;
+            mask-image: none;
+            opacity: 0.32;
+            transition: opacity 0.28s ease, color 0.35s ease;
+        }
+        .hidden-layer .ht-en {
+            font-size: clamp(0.7rem, 1.6vw, 1.6rem);
+            line-height: 1.4;
+            letter-spacing: 0.35em;
+            opacity: 0.8;
+        }
+        .hidden-layer .frag {
+            display: inline-block;
+            transform: translateY(var(--fy, 0px)) rotate(var(--fr, 0deg));
+        }
+
+        /* ===== 背景氛围层 ===== */
         .bg-grid, .bg-glow, .cursor-glow {
             position: fixed;
             top: 0;
@@ -105,44 +200,36 @@
             pointer-events: none;
             z-index: 0;
         }
-
-        /* 极淡网格线，增加纵深感，不抢主体 */
         .bg-grid {
+            top: -24px;
+            left: -24px;
+            width: calc(100% + 48px);
+            height: calc(100% + 48px);
             background-image:
-                linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+                linear-gradient(rgba(42, 39, 36, 0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(42, 39, 36, 0.045) 1px, transparent 1px);
             background-size: 64px 64px;
+            will-change: transform;
         }
-
-        /* 中央柔和光晕，汇聚视线 */
         .bg-glow {
-            background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(0, 0, 0, 0.045), transparent 65%);
+            background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(217, 84, 30, 0.035), transparent 65%);
         }
-
-        /* 鼠标跟随的淡柔光 */
         .cursor-glow {
             width: 360px;
             height: 360px;
             border-radius: 50%;
             left: 0;
             top: 0;
-            background: radial-gradient(circle, rgba(0, 0, 0, 0.055), transparent 65%);
+            background: radial-gradient(circle, rgba(217, 84, 30, 0.09), transparent 65%);
             transform: translate(-50%, -50%);
-            transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+            transition: opacity 0.3s ease;
             will-change: transform;
         }
-
-        /* 触屏设备隐藏鼠标光晕 */
         @media (hover: none), (pointer: coarse) {
             .cursor-glow { display: none; }
         }
 
-        /* 尊重系统减少动效偏好 */
-        @media (prefers-reduced-motion: reduce) {
-            .cursor-glow { transition: none; }
-        }
-
-        /* ===== 中央超大淡斜杠：LOGO 移走后驻留屏幕中央，缓慢摆动呼吸 ===== */
+        /* ===== 中央超大淡斜杠 ===== */
         .center-slash {
             position: absolute;
             top: 50%;
@@ -150,7 +237,7 @@
             transform: translate(-50%, -50%);
             font-size: 55vmin;
             line-height: 1;
-            color: rgba(0, 0, 0, 0.05);
+            color: rgba(217, 84, 30, 0.16);
             pointer-events: none;
             user-select: none;
             opacity: 0;
@@ -162,52 +249,415 @@
             animation: slashBreath 10s ease-in-out infinite;
         }
         @keyframes slashBreath {
-            0%, 100% { transform: translate(-50%, -50%) rotate(-5deg) scale(1); }
-            50%      { transform: translate(-50%, -50%) rotate(5deg) scale(1.02); }
+            0%, 100% { transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) rotate(-5deg) scale(1); }
+            50%      { transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) rotate(5deg) scale(1.02); }
         }
+        .center-slash.pulse::after {
+            content: "/";
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: rgba(217, 84, 30, 0.55);
+            animation: pulseOut 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes pulseOut {
+            0%   { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.3); }
+        }
+
+        /* ===== 邮箱：柔和上浮入场 + 逐字磁场 + 微漂浮 + 悬停波浪 + 点击炸开 ===== */
+        .footer-text {
+            position: absolute;
+            color: #6B6156;
+        }
+        .right-bottom {
+            right: 2rem;
+            bottom: 25%;
+            padding-top: 0.2em;
+            font-size: 0.9rem;
+            text-align: left;
+            opacity: 1;
+            transition: opacity 1s ease;
+            z-index: 5;
+        }
+        .right-bottom.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .email-ch {
+            display: inline-block;
+            color: #6B6156;
+            transform: translate(var(--pullX, 0px), var(--pullY, 0px)) rotate(var(--tilt, 0deg));
+            transition: color 0.3s ease;
+            will-change: transform;
+        }
+        .email-in {
+            display: inline-block;
+            opacity: 0;
+            animation: emailIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: calc(0.3s + var(--i) * 0.05s);
+        }
+        @keyframes emailIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.94); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .email-ch i {
+            display: inline-block;
+            font-style: normal;
+            animation: emailFloat var(--fd, 4s) ease-in-out infinite alternate;
+            animation-delay: var(--fdelay, 0s);
+        }
+        @keyframes emailFloat {
+            from { transform: translateY(-1.5px); }
+            to   { transform: translateY(1.5px); }
+        }
+        .right-bottom:hover .email-ch {
+            color: #D9541E;
+        }
+        .right-bottom.burst .email-ch {
+            animation: emailBurst 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes emailBurst {
+            0%   { transform: translate(var(--pullX, 0px), var(--pullY, 0px)) rotate(var(--tilt, 0deg)); opacity: 1; }
+            30%  { transform: translate(calc((var(--i) - 8) * 6px + var(--pullX, 0px)), calc(-12px + var(--pullY, 0px))) rotate(var(--tilt, 0deg)); opacity: 0.35; }
+            100% { transform: translate(var(--pullX, 0px), var(--pullY, 0px)) rotate(var(--tilt, 0deg)); opacity: 1; }
+        }
+
+        /* 尊重系统减少动效偏好 */
         @media (prefers-reduced-motion: reduce) {
+            .ch, .email-ch { animation: none; opacity: 1; transform: none; }
+            .email-in { animation: none; opacity: 1; transform: none; }
+            .email-ch i { animation: none; }
+            .scatter span { animation: none; }
+            .slash { animation: none; }
+            .cursor-glow { transition: none; }
             .center-slash.active { animation: none; }
+            .center-slash.pulse::after { animation: none; }
+            .hidden-layer, .scatter { transition: none; }
+        }
+
+        /* ===== 深色模式：暖炭底 + 沙色字 + 提亮焦橙 ===== */
+        @media (prefers-color-scheme: dark) {
+            html, body { background: #1C1A18; }
+            .center-text { --logo-color: #A79C8E; }
+            .footer-text, .email-ch { color: #A79C8E; }
+            .right-bottom:hover .email-ch { color: #E0703C; }
+            .scatter span { color: rgba(216, 203, 179, 0.10); }
+            .scatter span.hot { color: rgba(230, 110, 60, 0.55); }
+            .hidden-layer { --depth: 0.38; color: rgba(216, 203, 179, var(--depth, 0.38)); }
+            .bg-grid {
+                background-image:
+                    linear-gradient(rgba(216, 203, 179, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(216, 203, 179, 0.05) 1px, transparent 1px);
+            }
+            .bg-glow { background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(230, 110, 60, 0.06), transparent 65%); }
+            .cursor-glow { background: radial-gradient(circle, rgba(230, 110, 60, 0.14), transparent 65%); }
+            .center-slash { color: rgba(230, 110, 60, 0.22); }
+            .center-slash.pulse::after { color: rgba(230, 110, 60, 0.5); }
         }
     </style>
 </head>
 <body>
-    <!-- 背景氛围层（不参与交互，不影响内容） -->
     <div class="bg-grid" aria-hidden="true"></div>
     <div class="bg-glow" aria-hidden="true"></div>
     <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-    <!-- 中央超大淡斜杠（品牌符号驻留，LOGO 移走后浮现） -->
     <div class="center-slash" aria-hidden="true">/</div>
 
-    <div class="center-text">
-        ANTHV<span class="slash">/</span>A
+    <div class="scatter" id="scatter" aria-hidden="true"></div>
+
+    <div class="hidden-layer" id="hiddenLayer" aria-hidden="true">
+        <div class="ht-en" data-text="Anthvia Limited"></div>
     </div>
 
-    <div class="footer-text left-bottom">
-        一点星尘（深圳）科技有限公司<br>
-        Anthvia Limited
+    <div class="center-text" aria-label="ANTHV/A">
+        <span class="ch" style="--i:0">A</span><span class="ch" style="--i:1">N</span><span class="ch" style="--i:2">T</span><span class="ch" style="--i:3">H</span><span class="ch" style="--i:4">V</span><span class="slash" id="logoSlash">/</span><span class="ch" style="--i:5">A</span>
     </div>
     
     <div class="footer-text right-bottom" id="email"></div>
 
     <script>
-      // 邮箱
-      document.getElementById("email").innerText = "contact" + "@" + "anthvia.com";
-
-      // 鼠标跟随柔光（仅精确指针设备，触屏自动隐藏）
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const precise = window.matchMedia("(hover: hover)").matches;
+      const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      let darkMode = darkQuery.matches;
+      const onSchemeChange = (e) => {
+        darkMode = e.matches;
+        lastLogo = -1;
+        lastDepth = -1;
+      };
+      if (darkQuery.addEventListener) darkQuery.addEventListener("change", onSchemeChange);
+      else if (darkQuery.addListener) darkQuery.addListener(onSchemeChange);
       const glow = document.getElementById("cursorGlow");
-      if (glow && window.matchMedia("(hover: hover)").matches) {
-        window.addEventListener("mousemove", (e) => {
-          glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-        }, { passive: true });
+      const grid = document.querySelector(".bg-grid");
+      const centerSlash = document.querySelector(".center-slash");
+      const logoSlash = document.getElementById("logoSlash");
+      const hiddenLayer = document.getElementById("hiddenLayer");
+      const logoEl = document.querySelector(".center-text");
+      const limitedEl = hiddenLayer.querySelector(".ht-en");
+      const emailEl = document.getElementById("email");
+
+      // 邮箱：逐字柔和上浮入场，无乱码闪动
+      const emailText = "contact" + "@" + "anthvia.com";
+      const emailGlyphs = [];
+      emailEl.innerHTML = "";
+      for (let i = 0; i < emailText.length; i++) {
+        const s = document.createElement("span");
+        s.className = "email-ch";
+        s.style.setProperty("--i", i);
+        s.style.setProperty("--fd", `${(3 + Math.random() * 3).toFixed(1)}s`);
+        s.style.setProperty("--fdelay", `${(-Math.random() * 4).toFixed(1)}s`);
+        const wrap = document.createElement("span");
+        wrap.className = "email-in";
+        const inner = document.createElement("i");
+        inner.textContent = emailText[i];
+        wrap.appendChild(inner);
+        s.appendChild(wrap);
+        emailEl.appendChild(s);
+        s._px = 0;
+        s._py = 0;
+        s._rot = 0;
+        emailGlyphs.push(s);
       }
 
-      // 5秒后执行：移动LOGO + 隐藏右下角邮箱 + 浮现中央斜杠
+      // Anthvia Limited 保留碎片化的探照文字
+      hiddenLayer.querySelectorAll("[data-text]").forEach((line) => {
+        const text = line.getAttribute("data-text");
+        line.textContent = "";
+        for (const ch of text) {
+          const frag = document.createElement("span");
+          frag.className = "frag";
+          frag.textContent = ch;
+          frag.style.setProperty("--fy", `${((Math.random() - 0.5) * 8).toFixed(1)}px`);
+          frag.style.setProperty("--fr", `${((Math.random() - 0.5) * 8).toFixed(1)}deg`);
+          line.appendChild(frag);
+        }
+      });
+
+      // 中文散落：随机位置、字号、朝向；5秒后随整层淡入静态出现
+      const scatter = document.getElementById("scatter");
+      const scatterChars = [];
+      const cnText = "一点星尘（深圳）科技有限公司";
+      for (const ch of cnText) {
+        const s = document.createElement("span");
+        const inner = document.createElement("i");
+        inner.className = "scatter-in";
+        inner.textContent = ch;
+        s.appendChild(inner);
+        s.style.left = `${(6 + Math.random() * 84).toFixed(2)}%`;
+        s.style.top = `${(8 + Math.random() * 80).toFixed(2)}%`;
+        s.style.fontSize = `${(0.85 + Math.random() * 1.55).toFixed(2)}rem`;
+        s.style.setProperty("--rot", `${((Math.random() - 0.5) * 40).toFixed(1)}deg`);
+        s._px = 0;
+        s._py = 0;
+        scatter.appendChild(s);
+        scatterChars.push(s);
+      }
+      function measureScatter() {
+        for (const c of scatterChars) {
+          c._x = c.offsetLeft + c.offsetWidth / 2;
+          c._y = c.offsetTop + c.offsetHeight / 2;
+        }
+      }
+      measureScatter();
+      function measureEmail() {
+        const base = emailEl.getBoundingClientRect();
+        for (const g of emailGlyphs) {
+          g._cx = base.left + g.offsetLeft + g.offsetWidth / 2;
+          g._cy = base.top + g.offsetTop + g.offsetHeight / 2;
+        }
+      }
+      measureEmail();
+      let logoCx = 0, logoCy = 0, limitedCx = 0, limitedCy = 0;
+      function measureAnchors() {
+        const lr = logoEl.getBoundingClientRect();
+        logoCx = lr.left + lr.width / 2;
+        logoCy = lr.top + lr.height / 2;
+        const hr = limitedEl.getBoundingClientRect();
+        limitedCx = hr.left + hr.width / 2;
+        limitedCy = hr.top + hr.height / 2;
+      }
+      measureAnchors();
+      window.addEventListener("resize", () => {
+        measureScatter();
+        measureEmail();
+        measureAnchors();
+      }, { passive: true });
+
+      let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
+      let cx = tx, cy = ty;
+      let px = 0, py = 0, ppx = 0, ppy = 0;
+      let mx = -9999, my = -9999;
+      let revealTimer;
+      let lastLogo = -1, lastDepth = -1;
+
+      // 鼠标与触摸共用一套坐标状态，行为按指针类型区分
+      function applyPointer(x, y) {
+        mx = x;
+        my = y;
+        hiddenLayer.style.setProperty("--mx", `${x}px`);
+        hiddenLayer.style.setProperty("--my", `${y}px`);
+        if (glow && precise) {
+          tx = x;
+          ty = y;
+          px = (x / window.innerWidth - 0.5) * 2;
+          py = (y / window.innerHeight - 0.5) * 2;
+        }
+      }
+      function clearPointer() {
+        mx = -9999;
+        my = -9999;
+        hiddenLayer.style.setProperty("--mx", "-600px");
+        hiddenLayer.style.setProperty("--my", "-600px");
+        if (glow && precise) glow.style.opacity = "0";
+      }
+      window.addEventListener("mousemove", (e) => {
+        applyPointer(e.clientX, e.clientY);
+        if (glow && precise) glow.style.opacity = "1";
+      }, { passive: true });
+      document.addEventListener("mouseleave", clearPointer, { passive: true });
+      window.addEventListener("touchstart", (e) => {
+        const t = e.touches[0];
+        if (t) applyPointer(t.clientX, t.clientY);
+      }, { passive: true });
+      window.addEventListener("touchmove", (e) => {
+        const t = e.touches[0];
+        if (t) applyPointer(t.clientX, t.clientY);
+      }, { passive: true });
+      window.addEventListener("touchend", clearPointer, { passive: true });
+      window.addEventListener("touchcancel", clearPointer, { passive: true });
+      window.addEventListener("blur", clearPointer);
+
+      if (reduceMotion) {
+        if (glow && precise) {
+          window.addEventListener("mousemove", (e) => {
+            glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+          }, { passive: true });
+        }
+      } else {
+        (function tick() {
+          if (glow && precise) {
+            cx += (tx - cx) * 0.12;
+            cy += (ty - cy) * 0.12;
+            ppx += (px - ppx) * 0.06;
+            ppy += (py - ppy) * 0.06;
+            glow.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px) translate(-50%, -50%)`;
+            grid.style.transform = `translate(${(-ppx * 10).toFixed(2)}px, ${(-ppy * 10).toFixed(2)}px)`;
+            centerSlash.style.setProperty("--px", `${(ppx * 10).toFixed(2)}px`);
+            centerSlash.style.setProperty("--py", `${(ppy * 10).toFixed(2)}px`);
+          }
+          if (scatter.classList.contains("ready")) {
+            for (const c of scatterChars) {
+              const dx = c._x - mx, dy = c._y - my;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              let wantX = 0, wantY = 0, f = 0;
+              if (dist > 0 && dist < 180) {
+                f = 1 - dist / 180;
+                wantX = (dx / dist) * f * 46;
+                wantY = (dy / dist) * f * 46;
+              }
+              c._px += (wantX - c._px) * 0.14;
+              c._py += (wantY - c._py) * 0.14;
+              c.style.setProperty("--pushX", `${c._px.toFixed(1)}px`);
+              c.style.setProperty("--pushY", `${c._py.toFixed(1)}px`);
+              c.classList.toggle("hot", f > 0.12);
+            }
+          }
+          if (!emailEl.classList.contains("hidden")) {
+            const hovering = precise && emailEl.matches(":hover");
+            for (let i = 0; i < emailGlyphs.length; i++) {
+              const g = emailGlyphs[i];
+              const edx = mx - g._cx;
+              const edy = my - g._cy;
+              const edist = Math.sqrt(edx * edx + edy * edy) || 1;
+              let targetX = 0, targetY = 0, targetRot = 0;
+              if (edist < 220) {
+                const f = 1 - edist / 220;
+                const e = f * f;
+                targetX = (edx / edist) * e * 18;
+                targetY = (edy / edist) * e * 18;
+                targetRot = (edx / edist) * e * 9;
+              }
+              if (hovering) {
+                targetY += -3 + Math.sin(performance.now() / 260 + i * 0.7) * 2.5;
+                targetRot += (i - 8) * 0.8;
+              }
+              g._px += (targetX - g._px) * 0.12;
+              g._py += (targetY - g._py) * 0.12;
+              g._rot += (targetRot - g._rot) * 0.12;
+              g.style.setProperty("--pullX", `${g._px.toFixed(2)}px`);
+              g.style.setProperty("--pullY", `${g._py.toFixed(2)}px`);
+              g.style.setProperty("--tilt", `${g._rot.toFixed(2)}deg`);
+            }
+          }
+          // LOGO 靠近轻微提亮（暖灰 → 浅暖灰，不用焦橙）
+          const ldx = mx - logoCx, ldy = my - logoCy;
+          const ldist = Math.sqrt(ldx * ldx + ldy * ldy) || 1;
+          const lt = ldist < 240 ? 1 - ldist / 240 : 0;
+          if (Math.abs(lt - lastLogo) > 0.005) {
+            const base = darkMode ? [167, 156, 142] : [107, 97, 86];
+            const bright = darkMode ? [196, 184, 166] : [138, 125, 110];
+            logoEl.style.setProperty("--logo-color",
+              `rgb(${Math.round(base[0] + (bright[0] - base[0]) * lt)}, ${Math.round(base[1] + (bright[1] - base[1]) * lt)}, ${Math.round(base[2] + (bright[2] - base[2]) * lt)})`);
+            lastLogo = lt;
+          }
+          // Limited 靠近轻微加深（显形范围内 0.48 → 0.6）
+          if (hiddenLayer.classList.contains("ready")) {
+            const hdx = mx - limitedCx, hdy = my - limitedCy;
+            const hdist = Math.sqrt(hdx * hdx + hdy * hdy) || 1;
+            const ht = hdist < 260 ? 1 - hdist / 260 : 0;
+            const depth = (darkMode ? 0.38 : 0.48) + 0.12 * ht;
+            if (Math.abs(depth - lastDepth) > 0.003) {
+              hiddenLayer.style.setProperty("--depth", depth.toFixed(3));
+              lastDepth = depth;
+            }
+          }
+          requestAnimationFrame(tick);
+        })();
+      }
+
+      // 5秒后：LOGO 移走、邮箱淡出、中央斜杠浮现、焦橙接力
       setTimeout(() => {
-        document.querySelector('.center-text').classList.add('moved');
-        document.querySelector('.right-bottom').classList.add('hidden');
-        document.querySelector('.center-slash').classList.add('active');
+        logoEl.classList.add("moved");
+        setTimeout(measureAnchors, 1300);
+        emailEl.classList.add("hidden");
+        centerSlash.classList.add("active");
+        scatter.classList.add("ready");
+        hiddenLayer.classList.add("ready");
+        if (!reduceMotion) {
+          logoSlash.classList.add("accent");
+          setTimeout(() => logoSlash.classList.remove("accent"), 450);
+        }
       }, 5000);
+
+      // 点击任意处：斜杠脉冲 + 隐藏信息闪现
+      if (!reduceMotion) {
+        window.addEventListener("pointerdown", () => {
+          centerSlash.classList.remove("pulse");
+          void centerSlash.offsetWidth;
+          centerSlash.classList.add("pulse");
+          if (hiddenLayer.classList.contains("ready")) {
+            hiddenLayer.classList.add("reveal");
+            clearTimeout(revealTimer);
+            revealTimer = setTimeout(() => hiddenLayer.classList.remove("reveal"), 320);
+          }
+        }, { passive: true });
+        centerSlash.addEventListener("animationend", (e) => {
+          if (e.animationName === "pulseOut") centerSlash.classList.remove("pulse");
+        });
+      }
+
+      // 点击邮箱：字符炸开归位
+      if (!reduceMotion) {
+        emailEl.addEventListener("click", () => {
+          emailEl.classList.remove("burst");
+          void emailEl.offsetWidth;
+          emailEl.classList.add("burst");
+        });
+        emailEl.addEventListener("animationend", (e) => {
+          if (e.animationName === "emailBurst") emailEl.classList.remove("burst");
+        });
+      }
     </script>
 </body>
 </html>
