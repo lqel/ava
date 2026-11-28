@@ -105,24 +105,24 @@
 
         .slash {
             display: inline-block;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
             clip-path: inset(12% 0 12% 0);
             animation: slashSlant 7s ease-in-out infinite;
             transition: color 0.5s ease;
             will-change: transform, opacity;
-            transform: translateZ(0);
-            backface-visibility: hidden;
         }
         .slash.accent {
             color: #D9541E;
         }
 
+        /* 飞出与飞进严格镜像：同一条斜线、同一角度、同一距离（13 : 36） */
         @keyframes slashSlant {
-            0%   { opacity: 1; transform: translate(0, 0) translateZ(0); }
-            14%  { opacity: 1; transform: translate(0, 0) translateZ(0); }
-            18%  { opacity: 0; transform: translate(15vw, -36vw) translateZ(0); }
-            24%  { opacity: 0; transform: translate(-15vw, 36vw) translateZ(0); }
-            28.5%{ opacity: 1; transform: translate(0, 0) translateZ(0); }
-            100% { opacity: 1; transform: translate(0, 0) translateZ(0); }
+            0%   { opacity: 1; transform: translate(0, 0); }
+            14%  { opacity: 1; transform: translate(0, 0); }
+            18%  { opacity: 0; transform: translate(13vw, -36vw); }
+            24%  { opacity: 0; transform: translate(-13vw, 36vw); }
+            28.5%{ opacity: 1; transform: translate(0, 0); }
+            100% { opacity: 1; transform: translate(0, 0); }
         }
 
         /* ===== 中文散落层：静态随机位置，鼠标靠近被推开并变焦橙 ===== */
@@ -192,6 +192,10 @@
             display: inline-block;
             transform: translateY(var(--fy, 0px)) rotate(var(--fr, 0deg));
         }
+        .hidden-layer .frag.gap {
+            width: 1.3em;
+            transform: none;
+        }
 
         /* ===== 背景氛围层 ===== */
         .bg-grid, .bg-glow, .cursor-glow {
@@ -240,6 +244,7 @@
             transform: translate(-50%, -50%);
             font-size: 55vmin;
             line-height: 1;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
             color: rgba(217, 84, 30, 0.16);
             pointer-events: none;
             user-select: none;
@@ -446,10 +451,15 @@
         line.textContent = "";
         for (const ch of text) {
           const frag = document.createElement("span");
-          frag.className = "frag";
-          frag.textContent = ch;
-          frag.style.setProperty("--fy", `${((Math.random() - 0.5) * 8).toFixed(1)}px`);
-          frag.style.setProperty("--fr", `${((Math.random() - 0.5) * 8).toFixed(1)}deg`);
+          if (ch === " ") {
+            frag.className = "frag gap";
+            frag.textContent = "\u00A0";
+          } else {
+            frag.className = "frag";
+            frag.textContent = ch;
+            frag.style.setProperty("--fy", `${((Math.random() - 0.5) * 8).toFixed(1)}px`);
+            frag.style.setProperty("--fr", `${((Math.random() - 0.5) * 8).toFixed(1)}deg`);
+          }
           line.appendChild(frag);
         }
       });
@@ -457,7 +467,7 @@
       // 中文散落：随机位置、字号、朝向；5秒后随整层淡入静态出现
       const scatter = document.getElementById("scatter");
       const scatterChars = [];
-      const cnText = "一点星尘（深圳）科技有限公司";
+      const cnText = "一点星尘";
       for (const ch of cnText) {
         const s = document.createElement("span");
         const inner = document.createElement("i");
