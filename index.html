@@ -115,13 +115,15 @@
             color: #D9541E;
         }
 
-        /* 飞出与飞进严格镜像：同一条斜线、同一角度、同一距离（13 : 36） */
+        /* 飞出与飞进严格镜像：同一条斜线、同一角度、同一距离（13 : 36），两段等长 0.28s
+           飞入先在左下远点静止渐显，再完整飞回，避免起点全透明导致轨迹被截断 */
         @keyframes slashSlant {
             0%   { opacity: 1; transform: translate(0, 0); }
             14%  { opacity: 1; transform: translate(0, 0); }
             18%  { opacity: 0; transform: translate(13vw, -36vw); }
-            24%  { opacity: 0; transform: translate(-13vw, 36vw); }
-            28.5%{ opacity: 1; transform: translate(0, 0); }
+            21%  { opacity: 0; transform: translate(-13vw, 36vw); }
+            24%  { opacity: 1; transform: translate(-13vw, 36vw); }
+            28%  { opacity: 1; transform: translate(0, 0); }
             100% { opacity: 1; transform: translate(0, 0); }
         }
 
