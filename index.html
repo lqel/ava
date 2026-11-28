@@ -42,15 +42,50 @@
     }
     </script>
     <style>
+        /* ============================================================
+           ONE RAIL — 同轴装置
+           全站只有一台机器：一根轴 + 挂在同一根轴上的滑块。
+           所有文字（LOGO / 邮箱 / Limited / 四字）都是同一种「滑块」，
+           由同一个主循环写位移、字距、显隐与逐字磁场，不存在各自计时。
+           ============================================================ */
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Hiragino Sans GB", sans-serif;
-            font-weight: 400;
+            font-weight: 300;
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
+        }
+
+        :root {
+            --bg: #F3EEE3;
+            --soft: #6B6156;
+            --ink: #2A2724;
+            --accent: #D9541E;
+            --hair: rgba(42, 39, 36, 0.16);
+            --grid: rgba(42, 39, 36, 0.035);
+            --slash: rgba(42, 39, 36, 0.065);
+            --glow: rgba(217, 84, 30, 0.055);
+            --spread: 0;
+            --close: 0;
+            --late: 0;
+            --intro: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1C1A18;
+                --soft: #A79C8E;
+                --ink: #D8CBB3;
+                --accent: #E0703C;
+                --hair: rgba(167, 156, 142, 0.18);
+                --grid: rgba(167, 156, 142, 0.04);
+                --slash: rgba(167, 156, 142, 0.08);
+                --glow: rgba(224, 112, 60, 0.06);
+            }
         }
 
         html, body {
@@ -58,638 +93,543 @@
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            background: #F3EEE3;
+            background: var(--bg);
             position: relative;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 初始：屏幕居中 | 5秒后：移动到左上角 */
-        .center-text {
-            font-size: 8vw;
-            color: var(--logo-color, #6B6156);
-            letter-spacing: 0.06em;
-            display: inline-flex;
-            align-items: baseline;
-            justify-content: center;
-            line-height: 1;
+        .sr {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: top 1.2s cubic-bezier(0.76, 0, 0.24, 1),
-                        left 1.2s cubic-bezier(0.76, 0, 0.24, 1),
-                        transform 1.2s cubic-bezier(0.76, 0, 0.24, 1),
-                        font-size 1.2s cubic-bezier(0.76, 0, 0.24, 1),
-                        color 0.4s ease;
-            z-index: 999;
-        }
-
-        .center-text.moved {
-            top: 2rem;
-            left: 2rem;
-            transform: translate(0, 0);
-            font-size: 1.8rem;
-        }
-
-        /* 字符逐个入场 */
-        .ch {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(0.14em);
-            animation: charIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            animation-delay: calc(var(--i) * 0.075s);
-        }
-        @keyframes charIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .slash {
-            display: inline-block;
-            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-            clip-path: inset(12% 0 12% 0);
-            animation: slashSlant 7s ease-in-out infinite;
-            transition: color 0.5s ease;
-            will-change: transform, opacity;
-        }
-        .slash.accent {
-            color: #D9541E;
-        }
-
-        /* 飞出与飞进严格镜像：同一条斜线、同一角度、同一距离（13 : 36），两段等长 0.28s
-           飞入先在左下远点静止渐显，再完整飞回，避免起点全透明导致轨迹被截断 */
-        @keyframes slashSlant {
-            0%   { opacity: 1; transform: translate(0, 0); }
-            14%  { opacity: 1; transform: translate(0, 0); }
-            18%  { opacity: 0; transform: translate(13vw, -36vw); }
-            21%  { opacity: 0; transform: translate(-13vw, 36vw); }
-            24%  { opacity: 1; transform: translate(-13vw, 36vw); }
-            28%  { opacity: 1; transform: translate(0, 0); }
-            100% { opacity: 1; transform: translate(0, 0); }
-        }
-
-        /* ===== 中文散落层：静态随机位置，鼠标靠近被推开并变焦橙 ===== */
-        .scatter {
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
+            width: 1px;
+            height: 1px;
             overflow: hidden;
-            opacity: 0;
-            transition: opacity 1.2s ease;
-        }
-        .scatter.ready {
-            opacity: 1;
-        }
-        .scatter span {
-            position: absolute;
-            display: inline-block;
-            color: rgba(42, 39, 36, 0.13);
-            transition: color 0.35s ease;
-            will-change: transform;
-            transform: translate(var(--pushX, 0px), var(--pushY, 0px));
-        }
-        .scatter span.hot {
-            color: rgba(217, 84, 30, 0.46);
-        }
-        .scatter-in {
-            display: inline-block;
-            font-style: normal;
-            transform: rotate(var(--rot, 0deg));
-        }
-
-        /* ===== 隐藏信息层：Anthvia Limited 保留探照可读 ===== */
-        .hidden-layer {
-            position: fixed;
-            inset: 0;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: flex-start;
-            padding: 0 0 18vh 6vw;
-            pointer-events: none;
-            color: rgba(42, 39, 36, var(--depth, 0.48));
+            clip-path: inset(50%);
             white-space: nowrap;
             opacity: 0;
-            transition: opacity 1.2s ease, color 0.35s ease;
-            -webkit-mask-image: radial-gradient(circle 260px at var(--mx, -600px) var(--my, -600px), #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 78%);
-            mask-image: radial-gradient(circle 260px at var(--mx, -600px) var(--my, -600px), #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 78%);
-        }
-        .hidden-layer.ready {
-            opacity: 1;
-        }
-        .hidden-layer.reveal {
-            -webkit-mask-image: none;
-            mask-image: none;
-            opacity: 0.32;
-            transition: opacity 0.28s ease, color 0.35s ease;
-        }
-        .hidden-layer .ht-en {
-            font-size: clamp(0.7rem, 1.6vw, 1.6rem);
-            line-height: 1.4;
-            letter-spacing: 0.35em;
-            opacity: 0.8;
-        }
-        .hidden-layer .frag {
-            display: inline-block;
-            transform: translateY(var(--fy, 0px)) rotate(var(--fr, 0deg));
-        }
-        .hidden-layer .frag.gap {
-            width: 1.3em;
-            transform: none;
         }
 
-        /* ===== 背景氛围层 ===== */
-        .bg-grid, .bg-glow, .cursor-glow {
+        #frame {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
+            inset: 0;
+            overflow: hidden;
         }
-        .bg-grid {
-            top: -24px;
-            left: -24px;
-            width: calc(100% + 48px);
-            height: calc(100% + 48px);
+
+        /* 极淡网格：只随收束平移一格，不闪不变色 */
+        .grid {
+            position: absolute;
+            inset: -80px;
             background-image:
-                linear-gradient(rgba(42, 39, 36, 0.045) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(42, 39, 36, 0.045) 1px, transparent 1px);
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
             background-size: 64px 64px;
-            will-change: transform;
-        }
-        .bg-glow {
-            background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(217, 84, 30, 0.035), transparent 65%);
-        }
-        .cursor-glow {
-            width: 360px;
-            height: 360px;
-            border-radius: 50%;
-            left: 0;
-            top: 0;
-            background: radial-gradient(circle, rgba(217, 84, 30, 0.09), transparent 65%);
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s ease;
-            will-change: transform;
-        }
-        @media (hover: none), (pointer: coarse) {
-            .cursor-glow { display: none; }
+            background-position:
+                calc(var(--close) * 10px) calc(var(--close) * 6px);
+            pointer-events: none;
         }
 
-        /* ===== 中央超大淡斜杠 ===== */
-        .center-slash {
+        #glow {
             position: absolute;
-            top: 50%;
             left: 50%;
+            top: 50%;
+            width: 52vmax;
+            height: 52vmax;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow) 0%, transparent 68%);
             transform: translate(-50%, -50%);
-            font-size: 55vmin;
-            line-height: 1;
-            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-            color: rgba(217, 84, 30, 0.16);
             pointer-events: none;
-            user-select: none;
             opacity: 0;
-            transition: opacity 1.2s ease;
-            z-index: 0;
-        }
-        .center-slash.active {
-            opacity: 1;
-            animation: slashBreath 10s ease-in-out infinite;
-        }
-        @keyframes slashBreath {
-            0%, 100% { transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) rotate(-5deg) scale(1); }
-            50%      { transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) rotate(5deg) scale(1.02); }
-        }
-        .center-slash.pulse::after {
-            content: "/";
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: rgba(217, 84, 30, 0.55);
-            animation: pulseOut 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-        @keyframes pulseOut {
-            0%   { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(1.3); }
+            transition: opacity 0.4s ease;
         }
 
-        /* ===== 邮箱：柔和上浮入场 + 逐字磁场 + 微漂浮 + 悬停波浪 + 点击炸开 ===== */
-        .footer-text {
+        /* 装置本体：整块只做鼠标视差，内部所有部件同拍 */
+        #rig {
             position: absolute;
-            color: #6B6156;
-        }
-        .right-bottom {
-            right: 2rem;
-            bottom: 25%;
-            padding-top: 0.2em;
-            font-size: 0.9rem;
-            text-align: left;
-            opacity: 1;
-            transition: opacity 1s ease;
-            z-index: 5;
-        }
-        .right-bottom.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .email-ch {
-            display: inline-block;
-            color: #6B6156;
-            transform: translate(var(--pullX, 0px), var(--pullY, 0px)) rotate(var(--tilt, 0deg));
-            transition: color 0.3s ease;
+            left: 50%;
+            top: 50%;
+            width: min(1120px, 88vw);
+            height: min(560px, 68vh);
+            transform: translate3d(
+                calc(-50% + var(--parx, 0px)),
+                calc(-50% + var(--pary, 0px)), 0);
             will-change: transform;
         }
-        .email-in {
-            display: inline-block;
+
+        .rail {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--hair) 6%, var(--hair) 94%, transparent 100%);
+            transform-origin: 50% 50%;
+        }
+
+        .tick {
+            position: absolute;
+            top: -3px;
+            width: 1px;
+            height: 7px;
+            background: var(--hair);
+            opacity: 0.45;
+            transform: translateX(-50%);
+        }
+
+        .tick.major {
+            top: -6px;
+            height: 13px;
+        }
+
+        /* 扫描头：一根极细的焦橙竖线，沿轴走一遍 */
+        .head {
+            position: absolute;
+            top: -11px;
+            left: 0;
+            width: 1px;
+            height: 23px;
+            background: var(--accent);
+            transform: translateX(-50%);
             opacity: 0;
-            animation: emailIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            animation-delay: calc(0.3s + var(--i) * 0.05s);
+            pointer-events: none;
         }
-        @keyframes emailIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.94); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* 点击脉冲：沿轴展开的一条细亮线 */
+        .pulse {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            transform: scaleX(var(--pw, 0));
+            opacity: var(--po, 0);
+            pointer-events: none;
         }
-        .email-ch i {
+
+        /* 中央斜杠：装置的指针，不参与文字排版，但与全场同拍推拉 */
+        .axis-slash {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            font-size: clamp(180px, 34vw, 420px);
+            line-height: 1;
+            color: var(--slash);
+            clip-path: inset(14% 0 14% 0);
+            opacity: 0;
+            white-space: nowrap;
+            pointer-events: none;
+            transform: translate3d(
+                calc(-50% + var(--sx, 0px)),
+                calc(-50% + var(--sy, 0px)), 0)
+                rotate(var(--rot, 0deg));
+            will-change: transform;
+        }
+
+        /* ===== 滑块：所有文字共用同一条 transform ===== */
+        .unit {
+            position: absolute;
+            white-space: nowrap;
+            color: var(--soft);
+            pointer-events: none;
+            /* 默认不可见，由主循环统一给显隐，避免开场闪出未就位的文字 */
+            opacity: var(--o, 0);
+            transform: translate3d(
+                calc(var(--bx, 0px) + var(--ux, 0px)),
+                calc(var(--by, 0px) + var(--uy, 0px)), 0);
+            will-change: transform;
+        }
+
+        .unit .g {
             display: inline-block;
-            font-style: normal;
-            animation: emailFloat var(--fd, 4s) ease-in-out infinite alternate;
-            animation-delay: var(--fdelay, 0s);
-        }
-        @keyframes emailFloat {
-            from { transform: translateY(-1.5px); }
-            to   { transform: translateY(1.5px); }
-        }
-        .right-bottom:hover .email-ch {
-            color: #D9541E;
-        }
-        .right-bottom.burst .email-ch {
-            animation: emailBurst 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes emailBurst {
-            0%   { transform: translate(var(--pullX, 0px), var(--pullY, 0px)) rotate(var(--tilt, 0deg)); opacity: 1; }
-            30%  { transform: translate(calc((var(--i) - 8) * 6px + var(--pullX, 0px)), calc(-12px + var(--pullY, 0px))) rotate(var(--tilt, 0deg)); opacity: 0.35; }
-            100% { transform: translate(var(--pullX, 0px), var(--pullY, 0px)) rotate(var(--tilt, 0deg)); opacity: 1; }
+            opacity: var(--ga, 1);
+            will-change: transform, opacity;
         }
 
-        /* 尊重系统减少动效偏好 */
+        .unit .g.is-slash {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        }
+
+        /* 空格单独做成宽距，让 Anthvia Limited 的间隔看得出来 */
+        .unit .gap {
+            display: inline-block;
+            width: 1.25em;
+        }
+
+        .hero {
+            left: 50%;
+            top: 36%;
+            --bx: -50%;
+            --by: -50%;
+            font-size: clamp(34px, 6.6vw, 88px);
+            line-height: 1;
+            letter-spacing: calc(.28em + var(--spread) * .10em);
+        }
+
+        /* 抵消末字符后多出的一份字距，让 LOGO 的视觉中心真正落在轴上 */
+        .hero .g:last-child {
+            margin-right: calc(-.28em - var(--spread) * .10em);
+        }
+
+        .pair {
+            top: calc(50% + 44px);
+            font-size: clamp(10px, 1.06vw, 13px);
+            line-height: 1.4;
+            letter-spacing: calc(.20em + var(--spread) * .07em);
+        }
+
+        .legal { left: 0; }
+        .mail  { right: 0; }
+
+        /* 四字挂在轴的刻度上：位置与朝向随机但固定，出现后不飞不闪 */
+        .mark {
+            left: var(--ml, 50%);
+            top: calc(50% + var(--mt, 0px));
+            --bx: -50%;
+            --by: -50%;
+            font-size: clamp(15px, 2vw, 26px);
+            letter-spacing: 0;
+            transform: translate3d(
+                calc(var(--bx, 0px) + var(--ux, 0px)),
+                calc(var(--by, 0px) + var(--uy, 0px)), 0)
+                rotate(var(--turn, 0deg));
+        }
+
+        @media (max-width: 700px) {
+            #rig { height: min(520px, 72vh); }
+            .hero { top: 32%; }
+            .axis-slash { font-size: clamp(150px, 52vw, 260px); }
+            .legal { top: calc(50% + 46px); }
+            .mail { top: calc(50% + 76px); right: auto; left: 0; }
+            .pair { letter-spacing: calc(.14em + var(--spread) * .05em); }
+            .mark { font-size: clamp(14px, 4vw, 20px); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .ch, .email-ch { animation: none; opacity: 1; transform: none; }
-            .email-in { animation: none; opacity: 1; transform: none; }
-            .email-ch i { animation: none; }
-            .scatter span { animation: none; }
-            .slash { animation: none; }
-            .cursor-glow { transition: none; }
-            .center-slash.active { animation: none; }
-            .center-slash.pulse::after { animation: none; }
-            .hidden-layer, .scatter { transition: none; }
+            .grid { background-image: none; }
+            #glow { display: none; }
+            .head, .pulse { display: none; }
         }
 
-        /* ===== 深色模式：暖炭底 + 沙色字 + 提亮焦橙 ===== */
-        @media (prefers-color-scheme: dark) {
-            html, body { background: #1C1A18; }
-            .center-text { --logo-color: #A79C8E; }
-            .footer-text, .email-ch { color: #A79C8E; }
-            .right-bottom:hover .email-ch { color: #E0703C; }
-            .scatter span { color: rgba(216, 203, 179, 0.10); }
-            .scatter span.hot { color: rgba(230, 110, 60, 0.55); }
-            .hidden-layer { --depth: 0.38; color: rgba(216, 203, 179, var(--depth, 0.38)); }
-            .bg-grid {
-                background-image:
-                    linear-gradient(rgba(216, 203, 179, 0.05) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(216, 203, 179, 0.05) 1px, transparent 1px);
-            }
-            .bg-glow { background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(230, 110, 60, 0.06), transparent 65%); }
-            .cursor-glow { background: radial-gradient(circle, rgba(230, 110, 60, 0.14), transparent 65%); }
-            .center-slash { color: rgba(230, 110, 60, 0.22); }
-            .center-slash.pulse::after { color: rgba(230, 110, 60, 0.5); }
+        @media (hover: none), (pointer: coarse) {
+            #glow { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow" aria-hidden="true"></div>
-    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+    <h1 class="sr">Anthvia · 一点星尘</h1>
 
-    <div class="center-slash" aria-hidden="true">/</div>
+    <div id="frame">
+        <div class="grid" aria-hidden="true"></div>
 
-    <div class="scatter" id="scatter" aria-hidden="true"></div>
+        <div id="rig">
+            <div class="axis-slash" id="slash" aria-hidden="true">/</div>
 
-    <div class="hidden-layer" id="hiddenLayer" aria-hidden="true">
-        <div class="ht-en" data-text="Anthvia Limited"></div>
+            <div class="rail" id="rail" aria-hidden="true">
+                <b class="head" id="scanHead"></b>
+            </div>
+            <div class="pulse" id="pulse" aria-hidden="true"></div>
+
+            <div class="unit hero"  id="uHero"  data-lane="-1" data-pos="0.50"></div>
+            <div class="unit pair legal" id="uLegal" data-lane="2"  data-pos="0.22"></div>
+            <div class="unit pair mail"  id="uMail"  data-lane="-2" data-pos="0.80"></div>
+        </div>
+
+        <div id="glow" aria-hidden="true"></div>
     </div>
-
-    <div class="center-text" aria-label="ANTHV/A">
-        <span class="ch" style="--i:0">A</span><span class="ch" style="--i:1">N</span><span class="ch" style="--i:2">T</span><span class="ch" style="--i:3">H</span><span class="ch" style="--i:4">V</span><span class="slash" id="logoSlash">/</span><span class="ch" style="--i:5">A</span>
-    </div>
-    
-    <div class="footer-text right-bottom" id="email"></div>
 
     <script>
-      // 阻止选中、右键菜单与复制/剪切/全选快捷键
-      const blockCtx = (e) => e.preventDefault();
-      const blockCopy = (e) => {
-        e.preventDefault();
-        if (e.clipboardData) e.clipboardData.setData("text/plain", "");
-      };
-      document.addEventListener("contextmenu", blockCtx);
-      document.addEventListener("selectstart", blockCtx);
-      document.addEventListener("copy", blockCopy);
-      document.addEventListener("cut", blockCopy);
-      document.addEventListener("dragstart", blockCtx);
-      window.addEventListener("keydown", (e) => {
-        if (!(e.ctrlKey || e.metaKey)) return;
-        const k = e.key.toLowerCase();
-        if (k === "c" || k === "x" || k === "a") e.preventDefault();
-      });
+    (function () {
+        "use strict";
 
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const precise = window.matchMedia("(hover: hover)").matches;
-      const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      let darkMode = darkQuery.matches;
-      const onSchemeChange = (e) => {
-        darkMode = e.matches;
-        lastLogo = -1;
-        lastDepth = -1;
-      };
-      if (darkQuery.addEventListener) darkQuery.addEventListener("change", onSchemeChange);
-      else if (darkQuery.addListener) darkQuery.addListener(onSchemeChange);
-      const glow = document.getElementById("cursorGlow");
-      const grid = document.querySelector(".bg-grid");
-      const centerSlash = document.querySelector(".center-slash");
-      const logoSlash = document.getElementById("logoSlash");
-      const hiddenLayer = document.getElementById("hiddenLayer");
-      const logoEl = document.querySelector(".center-text");
-      const limitedEl = hiddenLayer.querySelector(".ht-en");
-      const emailEl = document.getElementById("email");
+        /* ---------- 禁止选中 / 复制 / 缩放（缩放由 viewport 控制） ---------- */
+        const blockCtx = (e) => e.preventDefault();
+        const blockCopy = (e) => {
+            e.preventDefault();
+            if (e.clipboardData) e.clipboardData.setData("text/plain", "");
+        };
+        document.addEventListener("contextmenu", blockCtx);
+        document.addEventListener("selectstart", blockCtx);
+        document.addEventListener("copy", blockCopy);
+        document.addEventListener("cut", blockCopy);
+        document.addEventListener("dragstart", blockCtx);
+        window.addEventListener("keydown", (e) => {
+            if (!(e.ctrlKey || e.metaKey)) return;
+            const k = e.key.toLowerCase();
+            if (k === "c" || k === "x" || k === "a") e.preventDefault();
+        });
 
-      // 邮箱：逐字柔和上浮入场，无乱码闪动
-      const emailText = "contact" + "@" + "anthvia.com";
-      const emailGlyphs = [];
-      emailEl.innerHTML = "";
-      for (let i = 0; i < emailText.length; i++) {
-        const s = document.createElement("span");
-        s.className = "email-ch";
-        s.style.setProperty("--i", i);
-        s.style.setProperty("--fd", `${(3 + Math.random() * 3).toFixed(1)}s`);
-        s.style.setProperty("--fdelay", `${(-Math.random() * 4).toFixed(1)}s`);
-        const wrap = document.createElement("span");
-        wrap.className = "email-in";
-        const inner = document.createElement("i");
-        inner.textContent = emailText[i];
-        wrap.appendChild(inner);
-        s.appendChild(wrap);
-        emailEl.appendChild(s);
-        s._px = 0;
-        s._py = 0;
-        s._rot = 0;
-        emailGlyphs.push(s);
-      }
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const precise = window.matchMedia("(hover: hover)").matches;
 
-      // Anthvia Limited 保留碎片化的探照文字
-      hiddenLayer.querySelectorAll("[data-text]").forEach((line) => {
-        const text = line.getAttribute("data-text");
-        line.textContent = "";
-        for (const ch of text) {
-          const frag = document.createElement("span");
-          if (ch === " ") {
-            frag.className = "frag gap";
-            frag.textContent = "\u00A0";
-          } else {
-            frag.className = "frag";
-            frag.textContent = ch;
-            frag.style.setProperty("--fy", `${((Math.random() - 0.5) * 8).toFixed(1)}px`);
-            frag.style.setProperty("--fr", `${((Math.random() - 0.5) * 8).toFixed(1)}deg`);
-          }
-          line.appendChild(frag);
+        const root = document.documentElement;
+        const rig = document.getElementById("rig");
+        const rail = document.getElementById("rail");
+        const scanHead = document.getElementById("scanHead");
+        const pulse = document.getElementById("pulse");
+        const slash = document.getElementById("slash");
+        const glow = document.getElementById("glow");
+
+        /* ---------- 轴上刻度 ---------- */
+        const TICKS = 16;
+        const ticks = [];
+        for (let i = 0; i <= TICKS; i++) {
+            const t = document.createElement("i");
+            t.className = "tick" + (i % 4 === 0 ? " major" : "");
+            t.style.left = (i / TICKS * 100) + "%";
+            rail.insertBefore(t, scanHead);
+            ticks.push(t);
         }
-      });
 
-      // 中文散落：随机位置、字号、朝向；5秒后随整层淡入静态出现
-      const scatter = document.getElementById("scatter");
-      const scatterChars = [];
-      const cnText = "一点星尘";
-      for (const ch of cnText) {
-        const s = document.createElement("span");
-        const inner = document.createElement("i");
-        inner.className = "scatter-in";
-        inner.textContent = ch;
-        s.appendChild(inner);
-        s.style.left = `${(6 + Math.random() * 84).toFixed(2)}%`;
-        s.style.top = `${(8 + Math.random() * 80).toFixed(2)}%`;
-        s.style.fontSize = `${(0.85 + Math.random() * 1.55).toFixed(2)}rem`;
-        s.style.setProperty("--rot", `${((Math.random() - 0.5) * 40).toFixed(1)}deg`);
-        s._px = 0;
-        s._py = 0;
-        scatter.appendChild(s);
-        scatterChars.push(s);
-      }
-      function measureScatter() {
-        for (const c of scatterChars) {
-          c._x = c.offsetLeft + c.offsetWidth / 2;
-          c._y = c.offsetTop + c.offsetHeight / 2;
-        }
-      }
-      measureScatter();
-      function measureEmail() {
-        const base = emailEl.getBoundingClientRect();
-        for (const g of emailGlyphs) {
-          g._cx = base.left + g.offsetLeft + g.offsetWidth / 2;
-          g._cy = base.top + g.offsetTop + g.offsetHeight / 2;
-        }
-      }
-      measureEmail();
-      let logoCx = 0, logoCy = 0, limitedCx = 0, limitedCy = 0;
-      function measureAnchors() {
-        const lr = logoEl.getBoundingClientRect();
-        logoCx = lr.left + lr.width / 2;
-        logoCy = lr.top + lr.height / 2;
-        const hr = limitedEl.getBoundingClientRect();
-        limitedCx = hr.left + hr.width / 2;
-        limitedCy = hr.top + hr.height / 2;
-      }
-      measureAnchors();
-      window.addEventListener("resize", () => {
-        measureScatter();
-        measureEmail();
-        measureAnchors();
-      }, { passive: true });
+        /* ---------- 把文字拆成逐字滑块 ----------
+           LOGO、邮箱、Limited、四字全部进同一个 glyphs 数组，
+           共用同一套磁场、同一套缓动、同一套加深逻辑。            */
+        const glyphs = [];
 
-      let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
-      let cx = tx, cy = ty;
-      let px = 0, py = 0, ppx = 0, ppy = 0;
-      let mx = -9999, my = -9999;
-      let revealTimer;
-      let lastLogo = -1, lastDepth = -1;
-
-      // 鼠标与触摸共用一套坐标状态，行为按指针类型区分
-      function applyPointer(x, y) {
-        mx = x;
-        my = y;
-        hiddenLayer.style.setProperty("--mx", `${x}px`);
-        hiddenLayer.style.setProperty("--my", `${y}px`);
-        if (glow && precise) {
-          tx = x;
-          ty = y;
-          px = (x / window.innerWidth - 0.5) * 2;
-          py = (y / window.innerHeight - 0.5) * 2;
-        }
-      }
-      function clearPointer() {
-        mx = -9999;
-        my = -9999;
-        hiddenLayer.style.setProperty("--mx", "-600px");
-        hiddenLayer.style.setProperty("--my", "-600px");
-        if (glow && precise) glow.style.opacity = "0";
-      }
-      window.addEventListener("mousemove", (e) => {
-        applyPointer(e.clientX, e.clientY);
-        if (glow && precise) glow.style.opacity = "1";
-      }, { passive: true });
-      document.addEventListener("mouseleave", clearPointer, { passive: true });
-      window.addEventListener("touchstart", (e) => {
-        const t = e.touches[0];
-        if (t) applyPointer(t.clientX, t.clientY);
-      }, { passive: true });
-      window.addEventListener("touchmove", (e) => {
-        const t = e.touches[0];
-        if (t) applyPointer(t.clientX, t.clientY);
-      }, { passive: true });
-      window.addEventListener("touchend", clearPointer, { passive: true });
-      window.addEventListener("touchcancel", clearPointer, { passive: true });
-      window.addEventListener("blur", clearPointer);
-
-      if (reduceMotion) {
-        if (glow && precise) {
-          window.addEventListener("mousemove", (e) => {
-            glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-          }, { passive: true });
-        }
-      } else {
-        (function tick() {
-          if (glow && precise) {
-            cx += (tx - cx) * 0.12;
-            cy += (ty - cy) * 0.12;
-            ppx += (px - ppx) * 0.06;
-            ppy += (py - ppy) * 0.06;
-            glow.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px) translate(-50%, -50%)`;
-            grid.style.transform = `translate(${(-ppx * 10).toFixed(2)}px, ${(-ppy * 10).toFixed(2)}px)`;
-            centerSlash.style.setProperty("--px", `${(ppx * 10).toFixed(2)}px`);
-            centerSlash.style.setProperty("--py", `${(ppy * 10).toFixed(2)}px`);
-          }
-          if (scatter.classList.contains("ready")) {
-            for (const c of scatterChars) {
-              const dx = c._x - mx, dy = c._y - my;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              let wantX = 0, wantY = 0, f = 0;
-              if (dist > 0 && dist < 180) {
-                f = 1 - dist / 180;
-                wantX = (dx / dist) * f * 46;
-                wantY = (dy / dist) * f * 46;
-              }
-              c._px += (wantX - c._px) * 0.14;
-              c._py += (wantY - c._py) * 0.14;
-              c.style.setProperty("--pushX", `${c._px.toFixed(1)}px`);
-              c.style.setProperty("--pushY", `${c._py.toFixed(1)}px`);
-              c.classList.toggle("hot", f > 0.12);
+        function makeUnit(el, text, base, late, lane, pos) {
+            const u = {
+                el, base, late, lane, pos,
+                ux: 0, uy: 0, visible: !late, o: late ? 0 : 1
+            };
+            for (const ch of text) {
+                if (ch === " ") {
+                    const gap = document.createElement("span");
+                    gap.className = "gap";
+                    el.appendChild(gap);
+                    continue;
+                }
+                const s = document.createElement("span");
+                s.className = "g" + (ch === "/" ? " is-slash" : "");
+                s.textContent = ch;
+                s.style.setProperty("--ga", String(base));
+                el.appendChild(s);
+                glyphs.push({
+                    el: s, unit: u, base,
+                    cx: 0, cy: 0, x: 0, y: 0, r: 0, d: 0,
+                    lx: 0, ly: 0, lr: 0, ld: 0
+                });
             }
-          }
-          if (!emailEl.classList.contains("hidden")) {
-            const hovering = precise && emailEl.matches(":hover");
-            for (let i = 0; i < emailGlyphs.length; i++) {
-              const g = emailGlyphs[i];
-              const edx = mx - g._cx;
-              const edy = my - g._cy;
-              const edist = Math.sqrt(edx * edx + edy * edy) || 1;
-              let targetX = 0, targetY = 0, targetRot = 0;
-              if (edist < 220) {
-                const f = 1 - edist / 220;
-                const e = f * f;
-                targetX = (edx / edist) * e * 18;
-                targetY = (edy / edist) * e * 18;
-                targetRot = (edx / edist) * e * 9;
-              }
-              if (hovering) {
-                targetY += -3 + Math.sin(performance.now() / 260 + i * 0.7) * 2.5;
-                targetRot += (i - 8) * 0.8;
-              }
-              g._px += (targetX - g._px) * 0.12;
-              g._py += (targetY - g._py) * 0.12;
-              g._rot += (targetRot - g._rot) * 0.12;
-              g.style.setProperty("--pullX", `${g._px.toFixed(2)}px`);
-              g.style.setProperty("--pullY", `${g._py.toFixed(2)}px`);
-              g.style.setProperty("--tilt", `${g._rot.toFixed(2)}deg`);
-            }
-          }
-          // LOGO 靠近轻微提亮（暖灰 → 浅暖灰，不用焦橙）
-          const ldx = mx - logoCx, ldy = my - logoCy;
-          const ldist = Math.sqrt(ldx * ldx + ldy * ldy) || 1;
-          const lt = ldist < 240 ? 1 - ldist / 240 : 0;
-          if (Math.abs(lt - lastLogo) > 0.005) {
-            const base = darkMode ? [167, 156, 142] : [107, 97, 86];
-            const bright = darkMode ? [196, 184, 166] : [138, 125, 110];
-            logoEl.style.setProperty("--logo-color",
-              `rgb(${Math.round(base[0] + (bright[0] - base[0]) * lt)}, ${Math.round(base[1] + (bright[1] - base[1]) * lt)}, ${Math.round(base[2] + (bright[2] - base[2]) * lt)})`);
-            lastLogo = lt;
-          }
-          // Limited 靠近轻微加深（显形范围内 0.48 → 0.6）
-          if (hiddenLayer.classList.contains("ready")) {
-            const hdx = mx - limitedCx, hdy = my - limitedCy;
-            const hdist = Math.sqrt(hdx * hdx + hdy * hdy) || 1;
-            const ht = hdist < 260 ? 1 - hdist / 260 : 0;
-            const depth = (darkMode ? 0.38 : 0.48) + 0.12 * ht;
-            if (Math.abs(depth - lastDepth) > 0.003) {
-              hiddenLayer.style.setProperty("--depth", depth.toFixed(3));
-              lastDepth = depth;
-            }
-          }
-          requestAnimationFrame(tick);
-        })();
-      }
-
-      // 5秒后：LOGO 移走、邮箱淡出、中央斜杠浮现、焦橙接力
-      setTimeout(() => {
-        logoEl.classList.add("moved");
-        setTimeout(measureAnchors, 1300);
-        emailEl.classList.add("hidden");
-        centerSlash.classList.add("active");
-        scatter.classList.add("ready");
-        hiddenLayer.classList.add("ready");
-        if (!reduceMotion) {
-          logoSlash.classList.add("accent");
-          setTimeout(() => logoSlash.classList.remove("accent"), 450);
+            return u;
         }
-      }, 5000);
 
-      // 点击任意处：斜杠脉冲 + 隐藏信息闪现
-      if (!reduceMotion) {
-        window.addEventListener("pointerdown", () => {
-          centerSlash.classList.remove("pulse");
-          void centerSlash.offsetWidth;
-          centerSlash.classList.add("pulse");
-          if (hiddenLayer.classList.contains("ready")) {
-            hiddenLayer.classList.add("reveal");
-            clearTimeout(revealTimer);
-            revealTimer = setTimeout(() => hiddenLayer.classList.remove("reveal"), 320);
-          }
+        const units = [];
+        units.push(makeUnit(document.getElementById("uHero"),  "ANTHV/A",            0.92, false, -1, 0.50));
+        units.push(makeUnit(document.getElementById("uLegal"), "Anthvia Limited",   0.78, true,   2, 0.22));
+        units.push(makeUnit(document.getElementById("uMail"),  "contact@anthvia.com", 0.78, false, -2, 0.80));
+
+        /* 四字：随机刻度位置 + 随机朝向，静态出现，无飞入 */
+        const cnText = "一点星尘";
+        const bands = [[8, 28], [30, 48], [52, 70], [72, 92]];
+        for (let i = 0; i < cnText.length; i++) {
+            const el = document.createElement("div");
+            el.className = "unit mark";
+            const ml = bands[i][0] + Math.random() * (bands[i][1] - bands[i][0]);
+            const mt = (i % 2 === 0 ? -1 : 1) * (30 + Math.random() * 62);
+            el.style.setProperty("--ml", ml.toFixed(2) + "%");
+            el.style.setProperty("--mt", mt.toFixed(1) + "px");
+            el.style.setProperty("--turn", (Math.random() * 30 - 15).toFixed(1) + "deg");
+            el.dataset.lane = (i % 2 === 0 ? 1 : -1);
+            el.dataset.pos = (ml / 100).toFixed(3);
+            el.setAttribute("aria-hidden", "true");
+            rig.appendChild(el);
+            units.push(makeUnit(el, cnText[i], 0.16, true,
+                Number(el.dataset.lane), Number(el.dataset.pos)));
+        }
+
+        /* ---------- 坐标缓存：只测一次，之后用当前位移推算 ---------- */
+        let parx = 0, pary = 0;
+        function measure() {
+            for (const g of glyphs) {
+                const r = g.el.getBoundingClientRect();
+                g.cx = r.left + r.width / 2 - g.unit.ux - parx;
+                g.cy = r.top + r.height / 2 - g.unit.uy - pary;
+            }
+        }
+
+        /* ---------- 指针：鼠标与触屏共用同一坐标状态 ---------- */
+        let px = -9999, py = -9999, onPoint = false;
+        let tparx = 0, tpary = 0;
+
+        function setPoint(x, y) {
+            px = x; py = y; onPoint = true;
+            tparx = (x / window.innerWidth - 0.5) * 20;
+            tpary = (y / window.innerHeight - 0.5) * 14;
+            if (precise) {
+                glow.style.left = x + "px";
+                glow.style.top = y + "px";
+                glow.style.opacity = "1";
+            }
+        }
+        function clearPoint() {
+            onPoint = false;
+            px = py = -9999;
+            tparx = tpary = 0;
+            if (precise) glow.style.opacity = "0";
+        }
+
+        document.addEventListener("pointermove", (e) => {
+            if (e.pointerType === "touch") return;
+            setPoint(e.clientX, e.clientY);
         }, { passive: true });
-        centerSlash.addEventListener("animationend", (e) => {
-          if (e.animationName === "pulseOut") centerSlash.classList.remove("pulse");
-        });
-      }
+        document.addEventListener("touchstart", (e) => {
+            const t = e.touches[0]; if (t) setPoint(t.clientX, t.clientY);
+        }, { passive: true });
+        document.addEventListener("touchmove", (e) => {
+            const t = e.touches[0]; if (t) setPoint(t.clientX, t.clientY);
+        }, { passive: true });
+        document.addEventListener("touchend", clearPoint, { passive: true });
+        document.addEventListener("touchcancel", clearPoint, { passive: true });
+        document.addEventListener("mouseleave", clearPoint);
+        window.addEventListener("blur", clearPoint);
+        window.addEventListener("resize", () => { measure(); });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 
-      // 点击邮箱：字符炸开归位
-      if (!reduceMotion) {
-        emailEl.addEventListener("click", () => {
-          emailEl.classList.remove("burst");
-          void emailEl.offsetWidth;
-          emailEl.classList.add("burst");
-        });
-        emailEl.addEventListener("animationend", (e) => {
-          if (e.animationName === "emailBurst") emailEl.classList.remove("burst");
-        });
-      }
+        /* ---------- 唯一主时钟 ----------
+           一轮 7.6s：收束 → 错位对拉 → 沿 70° 推出 → 归位静止。
+           点击会从 0 重新起一轮，等于手动触发一次完整机械动作。 */
+        const BEAT = 7600;
+        const start = performance.now();
+        let beat0 = start;
+        let clickAt = -9999;
+
+        document.addEventListener("pointerdown", () => {
+            beat0 = performance.now();
+            clickAt = beat0;
+        }, { passive: true });
+
+        const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+        const ease = (t) => t * t * (3 - 2 * t);
+        const wave = (p, s, e) => (p <= s || p >= e) ? 0 : Math.sin(Math.PI * (p - s) / (e - s));
+
+        /* 减少动效：直接给静态排版，不启动循环 */
+        if (reduceMotion) {
+            root.style.setProperty("--intro", "1");
+            root.style.setProperty("--late", "1");
+            root.style.setProperty("--spread", "0");
+            for (const u of units) {
+                u.el.style.setProperty("--ux", "0px");
+                u.el.style.setProperty("--uy", "0px");
+                u.el.style.setProperty("--o", "1");
+                u.visible = true;
+            }
+            for (const g of glyphs) {
+                g.el.style.setProperty("--ga", String(g.base));
+            }
+            for (const t of ticks) t.style.opacity = "0.45";
+            slash.style.opacity = "0.9";
+            measure();
+            return;
+        }
+
+        measure();
+        setTimeout(measure, 5200);
+
+        function frame(now) {
+            const elapsed = now - start;
+            const intro = ease(clamp(elapsed / 1400, 0, 1));
+            const late = ease(clamp((elapsed - 5000) / 1200, 0, 1));
+            const p = ((now - beat0) % BEAT) / BEAT;
+
+            const close = wave(p, 0.03, 0.27);
+            const shear = wave(p, 0.25, 0.53);
+            const thrust = wave(p, 0.51, 0.70);
+            const scan = clamp((p - 0.02) / 0.50, 0, 1);
+            const scanPower = wave(p, 0.02, 0.58);
+
+            /* 全局量：字距、网格、显隐 */
+            root.style.setProperty("--spread", close.toFixed(3));
+            root.style.setProperty("--close", close.toFixed(3));
+            root.style.setProperty("--intro", intro.toFixed(3));
+            root.style.setProperty("--late", late.toFixed(3));
+
+            parx += (tparx - parx) * 0.06;
+            pary += (tpary - pary) * 0.06;
+            rig.style.setProperty("--parx", parx.toFixed(2) + "px");
+            rig.style.setProperty("--pary", pary.toFixed(2) + "px");
+
+            /* 轴：收束时轻微缩短，刻度随扫描头依次亮起 */
+            rail.style.transform = "scaleX(" + (0.92 - close * 0.06).toFixed(3) + ")";
+            for (let i = 0; i < ticks.length; i++) {
+                const near = Math.max(0, 1 - Math.abs(scan - i / TICKS) / 0.11);
+                ticks[i].style.opacity = (0.35 + near * scanPower * 0.55).toFixed(3);
+            }
+            scanHead.style.left = (scan * 100).toFixed(2) + "%";
+            scanHead.style.opacity = (scanPower * 0.62 * intro).toFixed(3);
+
+            /* 点击脉冲：沿轴展开，900ms 内自行消失 */
+            const pt = clamp((now - clickAt) / 900, 0, 1);
+            pulse.style.setProperty("--pw", pt.toFixed(3));
+            pulse.style.setProperty("--po", (Math.sin(Math.PI * pt) * 0.42).toFixed(3));
+
+            /* 中央斜杠：与全场同拍推拉 + 微旋，5 秒后才出现 */
+            slash.style.opacity = (late * 0.9).toFixed(3);
+            slash.style.setProperty("--sx", (scan * 8 - 4 + thrust * 30 * 0.34).toFixed(2) + "px");
+            slash.style.setProperty("--sy", (-thrust * 30 * 0.94).toFixed(2) + "px");
+            slash.style.setProperty("--rot", (thrust * 4).toFixed(2) + "deg");
+
+            /* 滑块：所有文字吃同一组量，按 lane 分配方向与幅度 */
+            for (const u of units) {
+                const dir = -Math.sign(u.lane);
+                const prox = Math.max(0, 1 - Math.abs(u.pos - scan) / 0.14) * scanPower;
+                const ux = close * Math.sign(u.lane) * 18
+                         + shear * dir * (22 + Math.abs(u.lane) * 9)
+                         + thrust * 30 * 0.34;
+                const uy = close * (u.lane * 2)
+                         + shear * (u.lane * 3)
+                         - thrust * 30 * 0.94
+                         - prox * 14
+                         + (1 - intro) * 12
+                         + (u.late ? (1 - late) * 10 : 0);
+                u.ux = ux; u.uy = uy;
+                /* 邮箱与 Limited 是严格对称的一对：同亮度、同字号、同物理 */
+                u.o = u.late ? late : intro;
+                u.visible = u.o > 0.01;
+                u.el.style.setProperty("--ux", ux.toFixed(2) + "px");
+                u.el.style.setProperty("--uy", uy.toFixed(2) + "px");
+                u.el.style.setProperty("--o", u.o.toFixed(3));
+            }
+
+            /* 逐字磁场：LOGO / 邮箱 / Limited / 四字完全同一套物理 */
+            const R = precise ? 230 : 175;
+            const R2 = R * R;
+            const active = onPoint && !reduceMotion;
+            for (const g of glyphs) {
+                let tx = 0, ty = 0, tr = 0, td = 0;
+                if (active && g.unit.visible) {
+                    const gx = g.cx + g.unit.ux + parx;
+                    const gy = g.cy + g.unit.uy + pary;
+                    const dx = gx - px, dy = gy - py;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 < R2) {
+                        const d = Math.sqrt(d2) || 0.001;
+                        const f = 1 - d / R;
+                        const k = f * f;
+                        const nx = dx / d, ny = dy / d;
+                        tx = nx * k * 17;
+                        ty = ny * k * 17 - k * 4;
+                        tr = -nx * k * 7;
+                        td = k * 0.28;
+                    }
+                }
+                g.x += (tx - g.x) * 0.16;
+                g.y += (ty - g.y) * 0.16;
+                g.r += (tr - g.r) * 0.16;
+                g.d += (td - g.d) * 0.16;
+
+                const moving = Math.abs(g.x - g.lx) > 0.02 || Math.abs(g.y - g.ly) > 0.02
+                            || Math.abs(g.r - g.lr) > 0.02 || Math.abs(g.d - g.ld) > 0.002;
+                if (moving) {
+                    g.el.style.transform = "translate3d(" + g.x.toFixed(2) + "px," +
+                        g.y.toFixed(2) + "px,0) rotate(" + g.r.toFixed(2) + "deg)";
+                    g.el.style.setProperty("--ga", Math.min(1, g.base + g.d).toFixed(3));
+                    g.lx = g.x; g.ly = g.y; g.lr = g.r; g.ld = g.d;
+                }
+            }
+
+            requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    })();
     </script>
 </body>
 </html>
